@@ -79,7 +79,15 @@ export interface Filtros {
   semaforoAlmacen: Record<SemaforoOcupacion, boolean>;
   /** E11/F18: almacen de origen de las unidades visibles ('' = todos), compartido entre el panel y el mapa. */
   origen: string;
+  /** E11 (ficha): rango de km al proximo destino en la lista de Transporte ('' = todos). Se guarda aqui para que el filtro sea permanente. */
+  rangoKm: RangoKm;
 }
+
+/** E11 (ficha): rangos [desde, hasta[ en km al proximo destino. */
+export type RangoKm = '' | '0-10' | '10-20' | '20-40' | '40-200';
+export const RANGOS_KM: [Exclude<RangoKm, ''>, number, number, string][] = [
+  ['0-10', 0, 10, '0 a 10 km'], ['10-20', 10, 20, '10 a 20 km'], ['20-40', 20, 40, '20 a 40 km'], ['40-200', 40, 200, '40 a 200 km'],
+];
 
 const TODOS_LOS_COLORES: Record<SemaforoOcupacion, boolean> = { vacio: true, verde: true, ambar: true, rojo: true };
 
@@ -93,6 +101,7 @@ export const FILTROS_POR_DEFECTO: Filtros = {
   semaforoUT: { ...TODOS_LOS_COLORES },
   semaforoAlmacen: { ...TODOS_LOS_COLORES },
   origen: '',
+  rangoKm: '',
 };
 
 /** La unidad pasa el filtro de tipo, de origen y de semaforo de ocupacion (las averiadas o en taller siempre se muestran). */

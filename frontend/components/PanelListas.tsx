@@ -8,7 +8,7 @@ import {
 } from '@/lib/formato';
 import { kmEnTrayectoria, posicionEnTrayectoria } from '@/lib/useEstadoSimulacion';
 import {
-  almacenPasaFiltro, type Filtros, ocupacionAlmacen, ocupacionVehiculo, type Seleccion, vehiculoPasaFiltro,
+  almacenPasaFiltro, type Filtros, ocupacionAlmacen, ocupacionVehiculo, RANGOS_KM, type RangoKm, type Seleccion, vehiculoPasaFiltro,
 } from './MapaOperacion';
 import { IconoMini } from './Iconos';
 
@@ -112,6 +112,11 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
         return { v, o, llegaEn, salioHace, kmDestino, kmFalta, kmHecho };
       })
       .filter((f) => {
+        // E11: filtro permanente por rango de km al proximo destino; las unidades sin ruta no tienen distancia
+        const rango = RANGOS_KM.find((r) => r[0] === filtros.rangoKm);
+        return !rango || (f.kmDestino != null && f.kmDestino >= rango[1] && f.kmDestino < rango[2]);
+      })
+      .filter((f) => {
         if (limite == null || Number.isNaN(limite)) return true;
         const val = busqueda.modo === 'llega' ? f.llegaEn : busqueda.modo === 'salio' ? f.salioHace
           : busqueda.modo === 'kmDestino' ? f.kmDestino : f.kmHecho;
@@ -166,6 +171,15 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
           <option value="">Todos los almacenes</option>
           {origenes.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
+      </div>
+      {/* E11: filtro permanente por distancia al proximo destino; se combina con la busqueda y el orden */}
+      <div className="panel-fila">
+        <span className="hint">Distancia al destino:</span>
+        <select value={filtros.rangoKm} onChange={(e) => setFiltros({ ...filtros, rangoKm: e.target.value as RangoKm })}>
+          <option value="">Todas</option>
+          {RANGOS_KM.map(([id, , , texto]) => <option key={id} value={id}>{texto}</option>)}
+        </select>
+        {filtros.rangoKm && <span className="chip-filtro">Filtro activo</span>}
       </div>
       {/* E06-E09: por tiempo o distancia al destino / desde el origen */}
       <div className="busqueda-tiempo">
@@ -294,6 +308,10 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
               const o = ocupacionAlmacen(a, verde, ambar);
               const porSalir = a.porSalir.filter((p) => p.minuto >= ahora && p.minuto <= ahora + horas * 60);
               const entregados = a.entregados.filter((p) => p.minuto >= ahora - horas * 60 && p.minuto <= ahora);
+              // E20: pedidos (y paquetes) a bordo de unidades que ya salieron de este almacen en su ruta actual
+              const enTransito = estado.vehiculos
+                .filter((v) => v.origen === a.nombre && v.salidaMin != null && v.salidaMin <= ahora && v.pedidosCarga.length > 0)
+                .flatMap((v) => v.pedidosCarga.map((p) => ({ ...p, vehiculo: v.id })));
               const sel = a.id === idSel;
               const abierto = abiertos.has(a.id);
               return (
@@ -304,7 +322,7 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
                       <span className="celda-ut">
                         <IconoMini tipo="almacen" color={o ? COLOR_OCUPACION[o.sem] : '#0f3d5c'} borde={o?.sem === 'vacio' ? BORDE_VACIO : undefined} />
                         <b>{a.nombre}</b>
-                        {(porSalir.length > 0 || entregados.length > 0) && (
+                        {(enTransito.length > 0 || porSalir.length > 0 || entregados.length > 0) && (
                           <button className="btn-desplegar" title="Ver pedidos" onClick={(e) => {
                             e.stopPropagation();
                             setAbiertos((s) => { const n = new Set(s); if (n.has(a.id)) n.delete(a.id); else n.add(a.id); return n; });
@@ -318,20 +336,24 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
                           <span className={claseOcupacion(o.sem)}>{ETIQUETA_OCUPACION[o.sem]}</span></>
                       )}
                     </td>
-                    <td className="num">{a.pedidosEnTransito}</td>
+                    <td className="num">{enTransito.length}</td>
                     <td className="num">{porSalir.length}</td>
                     <td className="num">{entregados.length}</td>
                   </tr>
                   {abierto && (
                     <tr className="fila-detalle">
                       <td colSpan={5}>
+                        {enTransito.length > 0 && <div><span className="hint">En tránsito: </span>
+                          {enTransito.map((p, i) => (
+                            <button key={'t' + i} className="chip-pedido" onClick={() => onAbrir({ tipo: 'pedido', id: p.id })}>{p.id} · {p.cantidad} paq. · {p.vehiculo}</button>
+                          ))}</div>}
                         {porSalir.length > 0 && <div><span className="hint">Por salir: </span>
                           {porSalir.map((p, i) => (
                             <button key={'s' + i} className="chip-pedido" onClick={() => onAbrir({ tipo: 'pedido', id: p.pedido })}>{p.pedido} · sale {hora(p.minuto)}</button>
                           ))}</div>}
                         {entregados.length > 0 && <div><span className="hint">Entregados: </span>
                           {entregados.map((p, i) => (
-                            <span key={'e' + i} className="chip-pedido">{p.pedido} · {hora(p.minuto)}</span>
+                            <button key={'e' + i} className="chip-pedido" onClick={() => onAbrir({ tipo: 'pedido', id: p.pedido })}>{p.pedido} · {hora(p.minuto)}</button>
                           ))}</div>}
                       </td>
                     </tr>

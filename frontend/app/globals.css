@@ -409,6 +409,7 @@ main.main-mapa { padding: 0; flex: 1; min-height: 0; display: flex; flex-directi
 .celda-ut { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
 .btn-desplegar { border: 1px solid var(--border); background: #fff; border-radius: 5px; font-size: 11px; padding: 0 5px; color: var(--navy); }
 .chip-pedido { border: 1px solid var(--border); background: #fff; border-radius: 12px; font-size: 11px; padding: 2px 8px; margin: 2px 4px 2px 0; color: var(--navy); }
+.chip-filtro { background: var(--navy); color: #fff; border-radius: 10px; font-size: 11px; padding: 1px 8px; }
 .chip-averia { display: inline-block; margin-left: 4px; padding: 0 6px; border-radius: 8px; color: #fff; font-size: 10.5px; font-weight: 700; }
 .filtro-semaforo { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-bottom: 6px; }
 .filtro-color { display: inline-flex !important; align-items: center; gap: 4px; margin: 0 !important; font-weight: 500; white-space: nowrap; }
