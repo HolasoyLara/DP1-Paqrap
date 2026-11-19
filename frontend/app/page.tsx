@@ -7,7 +7,7 @@ import type { CierreCorrida, Configuracion, ParametrosCorrida, ResumenArchivo, R
 import { useEstadoSimulacion } from '@/lib/useEstadoSimulacion';
 import TopBar from '@/components/TopBar';
 import Sidebar, { type Modo } from '@/components/Sidebar';
-import BarraMapa from '@/components/BarraMapa';
+import BarraMapa, { InfoCorrida } from '@/components/BarraMapa';
 import type { CambioRitmo } from '@/components/ControlRitmo';
 import PantallaParametros from '@/components/PantallaParametros';
 import PantallaPanorama from '@/components/PantallaPanorama';
@@ -309,19 +309,7 @@ export default function Pagina() {
             onInfo={() => setInfoMapa((x) => !x)}
           />
           {infoMapa && (
-            <div className="info-flot">
-              <TopBar
-                estado={estado}
-                minutoAhora={minutoAhora}
-                escenarioTexto={escenarioTexto}
-                algoritmoTexto={algoritmoTexto}
-                puedeIniciar={!!form && !!archivos && archivos.every((a) => a.valido)}
-                ocupado={ocupado}
-                onIniciar={iniciar}
-                onDetener={detener}
-                onRitmo={cambiarRitmo}
-              />
-            </div>
+            <InfoCorrida estado={estado} escenarioTexto={escenarioTexto} algoritmoTexto={algoritmoTexto} onCerrar={() => setInfoMapa(false)} />
           )}
         </>
       ) : (

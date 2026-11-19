@@ -83,3 +83,51 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
     </div>
   );
 }
+
+/**
+ * Panel «Información» del mapa: solo lo que no esta en la barra (escenario, algoritmo, semilla, progreso, ritmo y
+ * el detalle en paquetes de la ocupacion global).
+ */
+export function InfoCorrida({ estado, escenarioTexto, algoritmoTexto, onCerrar }: {
+  estado: EstadoVisual | null; escenarioTexto: string; algoritmoTexto: string; onCerrar: () => void;
+}) {
+  const hay = !!estado && estado.estadoCorrida !== 'SIN_CORRIDA';
+  const enCurso = estado?.estadoCorrida === 'EN_CURSO';
+  const ocup = estado && hay ? ocupacionesGlobales(estado) : null;
+  const mayus = (s: string) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+  const filas: [string, string][] = [['Escenario', mayus(escenarioTexto)], ['Algoritmo', algoritmoTexto || '—']];
+  if (estado && hay) {
+    filas.push(['Semilla', String(estado.semilla)]);
+    filas.push(['Progreso', estado.totalDias ? `Día ${estado.diaActual} de ${estado.totalDias}` : `Día ${estado.diaActual}`]);
+    filas.push(['Inicio simulado', fechaHoraCompleta(estado.inicioMs)]);
+    if (estado.escenario !== 'TIEMPO_REAL') {
+      const base = estado.velocidad > 0 ? estado.factor / estado.velocidad : 0;
+      filas.push(['Ritmo', !enCurso ? '—' : estado.pausada ? 'En pausa'
+        : estado.velocidad === 1 ? `${formatoNumero(estado.factor)} h simuladas por h real (velocidad base)`
+          : `×${formatoNumero(estado.velocidad)} · ${formatoNumero(estado.factor)} h simuladas por h real (base ${formatoNumero(base)})`]);
+    }
+  }
+  if (ocup && estado) {
+    const sf = semaforoOcupacion(ocup.flota.pct, estado.umbralVerde, estado.umbralAmbar);
+    const sa = semaforoOcupacion(ocup.almacenes.pct, estado.umbralVerde, estado.umbralAmbar);
+    filas.push(['Carga de la flota', `${numero(ocup.flota.carga)} / ${numero(ocup.flota.cap)} paquetes · ${ETIQUETA_OCUPACION[sf]}`]);
+    filas.push(['Stock de intermedios', `${numero(ocup.almacenes.stock)} / ${numero(ocup.almacenes.cap)} · ${ETIQUETA_OCUPACION[sa]}`]);
+  }
+  return (
+    <div className="panel-flot info-flot" role="dialog" aria-label="Información de la corrida" onPointerDown={(e) => e.stopPropagation()}>
+      <div className="pf-cab">
+        <h4>Información de la corrida</h4>
+        <button type="button" className="pf-cerrar" onClick={onCerrar} aria-label="Cerrar información">×</button>
+      </div>
+      <dl className="info-lista">
+        {filas.map(([k, v]) => (
+          <div key={k}><dt>{k}</dt><dd>{v}</dd></div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function formatoNumero(v: number): string {
+  return v >= 10 ? numero(Math.round(v)) : v === 0.25 ? '¼' : v === 0.5 ? '½' : numero(v, v % 1 ? 1 : 0);
+}
