@@ -1,7 +1,7 @@
 package pe.pucp.paqrap.flota;
 
 /**
- * Tipos de averia de una unidad (D7; prototipo v04, seccion 2):
+ * Tipos de averia de una unidad:
  * - Tipo 1: la unidad queda inmovilizada 2 h en el lugar y luego continua su
  *   ruta con la carga que lleva.
  * - Tipo 2: queda inmovilizada en el lugar (como maximo 4 h), luego va al
@@ -11,7 +11,7 @@ package pe.pucp.paqrap.flota;
  *   disponible por lo menos 2 dias; retorna al inicio del turno 15:00-23:00.
  *   Su carga tambien se transborda.
  *
- * Las duraciones son las de la P3 de Preguntas y Respuestas (y su ampliacion):
+ * Duraciones segun las reglas del curso:
  * tipo 1 no disponible 2 h; tipo 2 hasta el fin del turno siguiente; tipo 3 al
  * menos 2 dias, volviendo en el turno de 15:00 a 23:00. En los tipos 2 y 3 la
  * unidad queda 4 h en el lugar y luego pasa (de forma instantanea) al almacen

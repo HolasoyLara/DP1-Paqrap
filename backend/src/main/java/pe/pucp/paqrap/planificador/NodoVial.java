@@ -3,7 +3,7 @@ package pe.pucp.paqrap.planificador;
 import java.util.Objects;
 
 /**
- * Nodo de la reticula vial (diagrama, Modulo B): -x: int, -y: int, -bloqueado: boolean.
+ * Nodo de la reticula vial.
  */
 public class NodoVial {
     private final int x;

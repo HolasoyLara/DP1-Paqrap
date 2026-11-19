@@ -66,7 +66,7 @@ export const ETIQUETA_OCUPACION: Record<SemaforoOcupacion, string> = {
   vacio: 'Vacío', verde: 'Poca carga', ambar: 'Carga media', rojo: 'Casi lleno / lleno',
 };
 
-/** D10-D13: color de la insignia de cada tipo de averia (amarillo, naranja, morado). */
+/** Color de la insignia de cada tipo de averia (amarillo, naranja, morado). */
 export const COLOR_AVERIA: Record<number, string> = { 1: '#e0b000', 2: '#e8730c', 3: '#6a1b9a' };
 export const ETIQUETA_AVERIA: Record<number, string> = {
   1: 'Avería tipo 1 · leve', 2: 'Avería tipo 2 · moderada', 3: 'Avería tipo 3 · grave',
@@ -108,7 +108,7 @@ export function etiquetaCodigo(codigo: string, etiquetas: Record<string, string>
   return t.charAt(0).toUpperCase() + t.slice(1);
 }
 
-/** dd/mm/aaaa hh:mm de una hora simulada (epoch ms en UTC de la fecha local). */
+/** Dd/mm/aaaa hh:mm de una hora simulada (epoch ms en UTC de la fecha local). */
 export function fechaHoraCompleta(ms: number): string {
   const d = new Date(ms);
   return `${dos(d.getUTCDate())}/${dos(d.getUTCMonth() + 1)}/${d.getUTCFullYear()} ${dos(d.getUTCHours())}:${dos(d.getUTCMinutes())}`;
@@ -131,7 +131,7 @@ export function transcurridoReal(segundos: number): string {
   return `${dos(Math.floor(m / 60))} h ${dos(m % 60)} min`;
 }
 
-/** datetime-local (YYYY-MM-DDTHH:mm) a partir de una fecha ISO del backend. */
+/** Datetime-local (YYYY-MM-DDTHH:mm) a partir de una fecha ISO del backend. */
 export function aInputFecha(iso: string | null | undefined): string {
   if (!iso) return '';
   return iso.slice(0, 16);

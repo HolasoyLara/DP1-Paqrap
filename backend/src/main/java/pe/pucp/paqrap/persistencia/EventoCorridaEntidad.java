@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
-/** Incidencias y replanificaciones de una corrida (B25, D19): bloqueos, averias, reasignaciones, colapso. */
+/** Incidencias y replanificaciones de una corrida: bloqueos, averias, reasignaciones, colapso. */
 @Entity
 @Table(name = "evento_corrida", indexes = @Index(name = "idx_evento_corrida", columnList = "corridaId"))
 public class EventoCorridaEntidad {

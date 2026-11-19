@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Mantenimiento preventivo (P19 de Preguntas y Respuestas).
+ * Mantenimiento preventivo.
  *
  * Archivo mant.preventivo.m1.m2 (por ejemplo mant.preventivo.09.10), una
  * linea por mantenimiento con el formato aaaammdd:TTNN (20260901:TA01).

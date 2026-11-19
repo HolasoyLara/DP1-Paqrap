@@ -3,18 +3,17 @@ package pe.pucp.paqrap.comun;
 import java.util.Arrays;
 
 /**
- * Parametros de operacion de una corrida (P6, P9, P15, P16, P17 de Preguntas
- * y Respuestas; D1, D2, D3, D10, D11 de la Lista de Exigencias).
+ * Parametros de operacion de una corrida.
  *
  * En la version por linea de comandos estos valores se leian de
  * parametros.properties en una clase estatica. En el servidor pueden convivir
  * varias corridas a la vez (la visual y los experimentos), asi que cada corrida
  * tiene su propia instancia. Las velocidades se pueden cambiar con la corrida
- * en marcha (P6, P16): se marcan volatile y aplican desde la siguiente ventana
- * de planificacion. La flota solo se fija al iniciar la corrida (P9).
+ * en marcha: se marcan volatile y aplican desde la siguiente ventana
+ * de planificacion. La flota solo se fija al iniciar la corrida.
  *
  * Valores por defecto: los del enunciado (velocidades 40/25/12 km/h, costos
- * S/ 8/6/3 por km, capacidades 24/8/4 paquetes) y la flota de la P17
+ * S/ 8/6/3 por km, capacidades 24/8/4 paquetes) y la flota del enunciado
  * (10 autos, 15 motos, 12 bicicletas).
  */
 public class ParametrosOperacion {
@@ -49,7 +48,7 @@ public class ParametrosOperacion {
     private int anchoCiudadKm = 70;
     private int altoCiudadKm = 50;
 
-    // Almacenes de la hoja Aux-Mapa (P5, actualizacion del 08-sep-2026).
+    // Almacenes de la hoja Aux-Mapa.
     private double almacenCentralX = 27;
     private double almacenCentralY = 14;
     private double almacenNorOesteX = 12;

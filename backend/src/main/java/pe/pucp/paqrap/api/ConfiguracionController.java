@@ -19,7 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-/** Salud del servicio y valores por defecto que muestra la pantalla V-1 (flota, almacenes, turnos, escenarios). */
+/** Salud del servicio y valores por defecto que muestra la pantalla de parametros (flota, almacenes, turnos, escenarios). */
 @RestController
 @RequestMapping("/api")
 public class ConfiguracionController {

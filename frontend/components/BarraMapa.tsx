@@ -29,7 +29,7 @@ const ESTADO_TEXTO: Record<string, string> = {
 };
 
 /**
- * Barra minima sobre el mapa a pantalla completa: estado, los 4 tiempos de la rubrica (C12-C16: fecha-hora simulada,
+ * Barra minima sobre el mapa a pantalla completa: estado, los 4 tiempos (fecha-hora simulada,
  * transcurrido simulado, fecha-hora actual y transcurrido real) siempre visibles, y los controles de la corrida.
  */
 export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, onIniciar, onDetener, onRitmo, infoAbierta, onInfo }: Props) {
@@ -49,7 +49,7 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
   const hay = !!estado && estado.estadoCorrida !== 'SIN_CORRIDA';
   const minuto = hay ? minutoAhora() : 0;
   const segundosReales = estado ? (enCurso ? base.seg + (performance.now() - base.desde) / 1000 : estado.tiempoRealSeg) : 0;
-  // G01-G04: ocupacion global de la flota y de los almacenes, siempre visible con su semaforo
+  // Ocupacion global de la flota y de los almacenes, siempre visible con su semaforo
   const ocup = estado && hay ? ocupacionesGlobales(estado) : null;
   const pildora = (etiqueta: string, pct: number, detalle: string) => {
     const sem = semaforoOcupacion(pct, estado!.umbralVerde, estado!.umbralAmbar);
@@ -69,7 +69,7 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
           {pildora('Almacenes', ocup.almacenes.pct, `${numero(ocup.almacenes.stock)} / ${numero(ocup.almacenes.cap)} en intermedios (central sin límite)`)}
         </div>
       )}
-      {/* C12-C15: los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
+      {/* Los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
       {estado?.escenario !== 'TIEMPO_REAL' && <div className="barra-tiempos" aria-live="polite">
         <span><em>Simulado</em><b>{hay && estado ? fechaHoraCompleta(estado.inicioMs + minuto * 60000) : '—'}</b></span>
         <span><em>Transcurrido sim.</em><b>{hay ? transcurridoSimulado(minuto) : '—'}</b></span>

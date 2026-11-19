@@ -1,9 +1,7 @@
 package pe.pucp.paqrap.planificador;
 
 /**
- * Calle entre dos nodos de la reticula vial (diagrama, Modulo B):
- * -nodoA, -nodoB, -dobleSentido: boolean, -bloqueada: boolean.
- * Todas las calles son de doble sentido (requisito no funcional c, B6).
+ * Calle entre dos nodos de la reticula vial. Todas las calles son de doble sentido.
  */
 public class AristaVial {
     private final NodoVial nodoA;

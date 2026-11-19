@@ -3,14 +3,8 @@ package pe.pucp.paqrap.registro;
 import pe.pucp.paqrap.comun.Coordenada;
 
 /**
- * Cliente del Modulo A (Registro de Pedidos y Clientes): -idCliente, -nombre,
- * relacion "ubicado en" con Coordenada (A5).
- *
- * NOTA DE ALCANCE: el diagrama de clases define a Cliente con mas operaciones
- * propias (registrar(), actualizarDatos(), consultarHistorialPedidos()). El
- * historial de pedidos de un cliente (A11) se consulta filtrando los pedidos
- * de la corrida por idCliente (ver ServicioSimulacion), por lo que esta clase
- * se mantiene como un contenedor inmutable.
+ * Cliente con su ubicacion. Es inmutable; su historial se obtiene filtrando los pedidos de
+ * la corrida por idCliente.
  */
 public class Cliente {
     private final String idCliente;

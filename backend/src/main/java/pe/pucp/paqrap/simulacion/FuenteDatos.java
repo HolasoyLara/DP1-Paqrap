@@ -39,14 +39,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Fuente de los archivos de entrada de las corridas (A9, D6, D7, P19).
+ * Fuente de los archivos de entrada de las corridas.
  *
  * - Datos publicados por el curso (ventas.AAAAMM.txt de 2026 a 2028,
  *   bloqueo.AAMM.txt y mant.preventivo.09.10): vienen empaquetados en el
  *   servicio (classpath "datos/") y, si existe la carpeta configurada en
  *   paqrap.datos-externos-dir, los archivos de esa carpeta tienen prioridad
  *   (asi se agregan meses nuevos sin recompilar).
- * - Archivos personalizados: el usuario puede subir desde V-1 un archivo de
+ * - Archivos personalizados: el usuario puede subir desde la pantalla de parametros un archivo de
  *   ventas, de bloqueos, de averias o de mantenimiento; se valida y reemplaza
  *   al publicado para las corridas siguientes, hasta que se quite.
  */
@@ -62,7 +62,7 @@ public class FuenteDatos {
     public record ArchivoSubido<T>(String tipo, String nombre, YearMonth mes, LocalDateTime cargado, ResultadoLectura<T> lectura) {
     }
 
-    /** Resumen de un archivo para la pantalla V-1. */
+    /** Resumen de un archivo para la pantalla de parametros. */
     public record ResumenArchivo(String tipo, String nombre, String descripcion, int registros, int lineas, int errores,
                                  boolean valido, boolean personalizado, List<ResultadoLectura.ErrorLinea> detalleErrores,
                                  String advertencia) {
@@ -166,7 +166,7 @@ public class FuenteDatos {
     }
 
     // ------------------------------------------------------------------
-    // Archivos personalizados (subidos desde V-1)
+    // Archivos personalizados (subidos por el usuario)
     // ------------------------------------------------------------------
 
     public ArchivoSubido<?> subir(String tipo, String nombreArchivo, byte[] contenido, YearMonth mesPorDefecto) throws IOException {
@@ -223,7 +223,7 @@ public class FuenteDatos {
     }
 
     // ------------------------------------------------------------------
-    // Datos de una corrida y resumen para V-1
+    // Datos de una corrida y resumen de los archivos
     // ------------------------------------------------------------------
 
     /** Fija los archivos que usara una corrida (publicados + personalizados vigentes). */

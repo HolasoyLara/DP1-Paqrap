@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * API del Visualizador (Modulo C) y de la corrida (Modulos B y D): iniciar y
  * detener, estado en vivo para el mapa, detalle de vehiculo/pedido/almacen,
- * bloqueo manual de tramos, averias, umbrales del semaforo y cierre (V-3).
+ * bloqueo manual de tramos, averias, umbrales del semaforo y cierre.
  */
 @RestController
 @RequestMapping("/api/simulacion")

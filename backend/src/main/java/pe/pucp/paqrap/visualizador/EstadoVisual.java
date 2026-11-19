@@ -5,9 +5,8 @@ import pe.pucp.paqrap.simulacion.InfoColapso;
 import java.util.List;
 
 /**
- * Estado de la corrida que consume el visualizador (Modulo C: C1-C4, C7-C12,
- * C16, C20-C22). Todos los dispositivos conectados reciben el mismo estado; la
- * zona visible, el zoom y la seleccion son locales a cada dispositivo (C5, C6).
+ * Estado de la corrida que consume el visualizador. Todos los dispositivos conectados reciben el mismo estado; la
+ * zona visible, el zoom y la seleccion son locales a cada dispositivo.
  *
  * Para que el mapa se anime con fluidez sin consultar al servidor a cada
  * instante, las horas viajan como "minutos simulados desde el inicio de la
@@ -63,7 +62,7 @@ public record EstadoVisual(
     }
 
     /**
-     * Almacen en el mapa. Campos agregados para la rubrica (E18-E22): partes en rutas que ya salieron de este
+     * Almacen en el mapa. Incluye: partes en rutas que ya salieron de este
      * almacen, partes asignadas que aun no salen (con su minuto de salida) y entregas de las ultimas 24 h simuladas.
      */
     public record AlmacenVisual(String id, String nombre, double x, double y, boolean central, Integer capacidad,
@@ -75,16 +74,16 @@ public record EstadoVisual(
     public record PedidoHora(String pedido, double minuto) {
     }
 
-    /** Parte de un pedido (E31): unidad y ruta que la llevan, almacen de salida y horas en minutos simulados. */
+    /** Parte de un pedido: unidad y ruta que la llevan, almacen de salida y horas en minutos simulados. */
     public record ParteVisual(String id, String vehiculo, String ruta, String almacen, int cantidad, Double salidaMin,
                               Double llegadaMin, String estado) {
     }
 
     /**
-     * Unidad en el mapa. Campos agregados para la rubrica: tipo de averia (1/2/3) y su fin (minutos), horas de la
+     * Unidad en el mapa. Incluye: tipo de averia (1/2/3) y su fin (minutos), horas de la
      * ruta actual en minutos simulados (salida, llegada a la siguiente parada, regreso) y paquetes por pedido a bordo.
      * Tambien el minuto desde el que la unidad va de regreso al almacen (para dibujar ese tramo distinto), los km
-     * recorridos en la ruta actual (E09, E17) y el almacen del que salio (E11).
+     * recorridos en la ruta actual y el almacen del que salio.
      */
     public record VehiculoVisual(String id, String tipo, String estado, String estadoEtiqueta, double x, double y,
                                  int carga, int capacidad, List<String> pedidos, Double holguraMinima, String destino,

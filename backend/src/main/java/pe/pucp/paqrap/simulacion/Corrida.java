@@ -12,10 +12,10 @@ import java.util.function.BiConsumer;
  * ritmo del escenario y publica el estado para el visualizador.
  *
  * - Simulacion del periodo: 5 dias simulados en la duracion objetivo (30-60
- *   min reales, B22).
- * - Dia a dia: el reloj avanza 1:1 con el reloj real (D12).
+ *   min reales).
+ * - Dia a dia: el reloj avanza 1:1 con el reloj real.
  * - Colapso: reloj acelerado (factor configurable) sin limite; termina solo al
- *   detectar el colapso (C14, D14).
+ *   detectar el colapso.
  *
  * En la simulacion del periodo y en el colapso el usuario puede cambiar el
  * ritmo durante la corrida: una velocidad relativa al ritmo base del escenario

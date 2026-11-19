@@ -14,33 +14,19 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Grafo de calles de doble sentido y calculo de distancias (diagrama, Modulo B):
- * -nodos: List<NodoVial>, -aristas: List<AristaVial>,
- * +calcularDistancia(origen, destino): double,
- * +calcularRutaMasCorta(origen, destino): List<NodoVial>.
+ * Grafo de calles de la ciudad (reticula de 70 x 50 km, nodos cada 1 km, doble sentido) y
+ * calculo de distancias.
  *
- * La ciudad es una reticula de 70 x 50 km con nodos cada 1 km y calles de
- * doble sentido en las 4 direcciones (P4 de Preguntas y Respuestas).
+ * Bloqueos programados: rigen en un intervalo y bloquean todos los nodos de su poligonal.
+ * A un nodo bloqueado se puede llegar (y entregar), pero no seguir de largo ni girar; hay
+ * que volver. Por eso la distancia depende de la hora.
  *
- * Bloqueos programados (P7): cada bloqueo rige en un intervalo de tiempo y
- * bloquea todos los nodos de su poligonal. Un nodo bloqueado no se puede
- * atravesar: se puede llegar hasta el (y entregar ahi), pero no seguir de
- * largo ni girar; hay que volver. Por eso la distancia depende de la hora:
- * calcularDistancia(origen, destino, hora) usa solo los bloqueos vigentes en
- * esa hora.
+ * Bloqueos manuales: el usuario cierra un tramo (arista) desde el mapa y queda cerrado en
+ * ambos sentidos hasta que lo reabra.
  *
- * Bloqueos manuales: el visualizador permite cerrar un tramo de calle (una
- * arista) con un clic (prototipo v04, V-2). Ese tramo no se puede recorrer en
- * ningun sentido hasta que el usuario lo vuelva a abrir.
- *
- * - Sin bloqueos vigentes: la distancia es la de Manhattan, que en esta
- *   reticula es exactamente el camino mas corto.
- * - Con bloqueos vigentes: BFS sobre la reticula esquivando los nodos
- *   bloqueados. Los bloqueos solo cambian en los instantes en que alguno
- *   empieza o termina, asi que entre dos de esos instantes (un "tramo
- *   horario") el mapa es el mismo; cada BFS se hace una vez por origen y por
- *   tramo horario y se reutiliza (cache), porque los algoritmos consultan las
- *   mismas distancias miles de veces.
+ * Sin bloqueos vigentes la distancia es la de Manhattan. Con bloqueos se usa BFS
+ * esquivando los nodos bloqueados; como el mapa solo cambia cuando un bloqueo empieza o
+ * termina, cada BFS se cachea por origen y por tramo horario.
  */
 public class RedVial {
     private static final int[][] DIRECCIONES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
@@ -226,7 +212,6 @@ public class RedVial {
         return lista;
     }
 
-    /** +bloquear(arista) (diagrama, version sobre AristaVial). */
     public void bloquear(AristaVial arista) {
         arista.setBloqueada(true);
         bloquearTramo(arista.getNodoA().getX(), arista.getNodoA().getY(), arista.getNodoB().getX(), arista.getNodoB().getY());
@@ -257,7 +242,7 @@ public class RedVial {
     // Distancias
     // ------------------------------------------------------------------
 
-    /** +calcularDistancia(origen, destino): double (diagrama). Sin bloqueos programados. */
+    /** Sin bloqueos programados. */
     public double calcularDistancia(NodoVial origen, NodoVial destino) {
         return distancia(indice(origen.getX(), origen.getY()), indice(destino.getX(), destino.getY()), -1, null);
     }
@@ -292,7 +277,7 @@ public class RedVial {
         return dist[destino] < 0 ? Double.POSITIVE_INFINITY : dist[destino];
     }
 
-    /** +calcularRutaMasCorta(origen, destino): List<NodoVial> (diagrama). Sin bloqueos programados. */
+    /** Sin bloqueos programados. */
     public List<NodoVial> calcularRutaMasCorta(NodoVial origen, NodoVial destino) {
         int[] camino = camino(indice(origen.getX(), origen.getY()), indice(destino.getX(), destino.getY()), null);
         return aNodos(camino);
@@ -329,7 +314,7 @@ public class RedVial {
     public int xDeNodo(int indiceNodo) { return xDe(indiceNodo); }
     public int yDeNodo(int indiceNodo) { return yDe(indiceNodo); }
 
-    /** true si el nodo (x, y) esta bloqueado por algun bloqueo programado vigente en la hora dada. */
+    /** True si el nodo (x, y) esta bloqueado por algun bloqueo programado vigente en la hora dada. */
     public boolean estaNodoBloqueado(int x, int y, double hora) {
         if (x < 0 || x > anchoKm || y < 0 || y > altoKm) return false;
         int tramo = tramoDe(hora);

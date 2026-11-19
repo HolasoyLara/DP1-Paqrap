@@ -8,7 +8,7 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
-/** Detalle persistido de cada corrida (D24): parametros, fechas, duracion real y cierre. */
+/** Detalle persistido de cada corrida: parametros, fechas, duracion real y cierre. */
 @Entity
 @Table(name = "corrida")
 public class CorridaEntidad {

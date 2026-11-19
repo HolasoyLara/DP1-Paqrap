@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Persistencia de las corridas (B25, D24): el motor de simulacion no espera a
+ * Persistencia de las corridas: el motor de simulacion no espera a
  * la base de datos; las rutas y eventos se encolan y se graban por lotes cada
  * dos segundos. Por defecto la base es H2 en archivo (carpeta de datos del
  * servicio); en la nube se puede apuntar a PostgreSQL con las variables

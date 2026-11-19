@@ -1,6 +1,6 @@
 package pe.pucp.paqrap.registro;
 
-/** Canal de origen del pedido (A25). */
+/** Canal de origen del pedido. */
 public enum CanalPedido {
     ARCHIVO_VENTAS("Archivo de ventas"),
     WEB("Web"),

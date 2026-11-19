@@ -1,7 +1,7 @@
 package pe.pucp.paqrap.simulacion;
 
 /**
- * Evento de la bitacora de la corrida (B25, D19, C22): replanificaciones por
+ * Evento de la bitacora de la corrida: replanificaciones por
  * bloqueo, averias, reasignaciones de carga, reprogramaciones, pedidos y
  * bloqueos manuales, colapso. El visualizador muestra los recientes como
  * alertas y en el historial de cada vehiculo o pedido.

@@ -59,26 +59,24 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
- * Motor de simulacion de PaqRap (Modulo D: D12, D13, D14; Modulo B: B9-B12,
- * B18-B20). Es el mismo motor para los 3 escenarios: lo unico que cambia es
+ * Motor de simulacion de PaqRap. Es el mismo motor para los 3 escenarios: lo unico que cambia es
  * el reloj (lo marca quien llama a avanzarHasta), el origen de los pedidos y
- * la condicion de cierre (B21).
+ * la condicion de cierre.
  *
  * Funciona por eventos, en orden de tiempo:
  * - llegada de pedidos (archivo de ventas del mes, registro manual, carga masiva);
- * - ventanas de planificacion cada N minutos (por defecto 60, como el ciclo de
- *   MainIntegracion del Algoritmo 1): se toman los pedidos pendientes y las
+ * - ventanas de planificacion cada N minutos (por defecto 60): se toman los pedidos pendientes y las
  *   unidades libres y se corre el Planificador con el algoritmo elegido (GA o
  *   ACO); ademas se replanifica de inmediato ante un pedido manual o una averia;
  * - hitos de cada unidad: llegada a cada cliente (el plazo se cumple al llegar,
- *   P11), fin de la entrega (1 h, B7) y regreso a un almacen;
+ *), fin de la entrega (1 h) y regreso a un almacen;
  * - inicio de cada bloqueo programado: las unidades en camino que iban a pasar
- *   por el recalculan su recorrido desde donde estan (B9);
- * - averias (D7): tipo 1 retrasa la ruta; tipos 2 y 3 dejan a la unidad en
- *   taller y su carga se transborda (B10) o se cubre con la carga en transito
- *   de otra unidad hacia un cliente con mas holgura (B11);
- * - recarga de los almacenes intermedios a las 23:59:59 (B15, D9) y cierre de dia;
- * - deteccion del colapso logistico (B24, D21).
+ *   por el recalculan su recorrido desde donde estan;
+ * - averias: tipo 1 retrasa la ruta; tipos 2 y 3 dejan a la unidad en
+ *   taller y su carga se transborda o se cubre con la carga en transito
+ *   de otra unidad hacia un cliente con mas holgura;
+ * - recarga de los almacenes intermedios a las 23:59:59 y cierre de dia;
+ * - deteccion del colapso logistico.
  *
  * Es seguro para varios hilos: el hilo de la corrida avanza el reloj y la API
  * consulta o envia comandos; todo pasa por un mismo candado, evento por evento.
@@ -102,7 +100,7 @@ public class MotorSimulacion {
     private record PedidoEntrante(Pedido pedido, CanalPedido canal, String observaciones) {
     }
 
-    /** Candidato a ceder su carga en transito (B11). */
+    /** Candidato a ceder su carga en transito. */
     private record Donante(VehiculoSim vehiculo, ParadaEnCurso parada, List<Pedido> secuencia, double costoExtra) {
     }
 
@@ -209,7 +207,7 @@ public class MotorSimulacion {
         almacenes.add(new AlmacenIntermedio("ESTE", "Intermedio Este", operacion.getUbicacionAlmacenEste(),
                 operacion.getCapacidadAlmacenIntermedio()));
 
-        // P10, P17, P18: flota oficial, todas las unidades salen del almacen central
+        // Flota oficial, todas las unidades salen del almacen central
         for (int i = 1; i <= operacion.getCantidadAutos(); i++) agregarVehiculo(new Auto(String.format("TA%02d", i), central, operacion, jornada));
         for (int i = 1; i <= operacion.getCantidadMotos(); i++) agregarVehiculo(new Moto(String.format("TM%02d", i), central, operacion, jornada));
         for (int i = 1; i <= operacion.getCantidadBicicletas(); i++) agregarVehiculo(new Bicicleta(String.format("TB%02d", i), central, operacion, jornada));
@@ -276,7 +274,7 @@ public class MotorSimulacion {
         if (indiceBloqueo < bloqueosPorIniciar.size()) t = Math.min(t, bloqueosPorIniciar.get(indiceBloqueo).getHoraInicio());
         for (VehiculoSim vs : vehiculos) {
             t = Math.min(t, vs.proximoHito(horaActual));
-            // P19 (nota 2): inicio del mantenimiento de una unidad que todavia lleva pedidos
+            // inicio del mantenimiento de una unidad que todavia lleva pedidos
             if (vs.getRuta() != null && vs.getRuta().siguienteParada() != null) {
                 double mant = vs.getVehiculo().limiteRetorno(horaActual);
                 if (mant > horaActual + EPS) t = Math.min(t, mant);
@@ -376,7 +374,7 @@ public class MotorSimulacion {
         bloqueosPorIniciar.addAll(porIniciar);
         indiceBloqueo = 0;
 
-        // P19: mantenimiento preventivo del mes
+        // Mantenimiento preventivo del mes
         Map<String, List<double[]>> periodos = datos.getMantenimiento().periodosDelMes(mes);
         for (VehiculoSim vs : vehiculos) {
             List<double[]> p = periodos.get(vs.getId());
@@ -557,7 +555,7 @@ public class MotorSimulacion {
         }
     }
 
-    /** Solo para el visualizador (E22): entregas de las ultimas 24 h simuladas, por almacen de salida. No afecta la simulacion. */
+    /** Solo para el visualizador: entregas de las ultimas 24 h simuladas, por almacen de salida. No afecta la simulacion. */
     private record EntregaReciente(String almacen, String pedido, double hora) {
     }
 
@@ -614,7 +612,7 @@ public class MotorSimulacion {
     // Planificacion
     // =====================================================================
 
-    /** Solo para el cierre (G08-G10): hora y causa de la ultima planificacion. */
+    /** Solo para el cierre: hora y causa de la ultima planificacion. */
     private double horaUltimaPlanificacion = Double.NaN;
     private String causaUltimaPlanificacion = "";
 
@@ -637,7 +635,7 @@ public class MotorSimulacion {
             return;
         }
 
-        // P13: si ninguna unidad libre puede llevar un pedido completo y no puede esperar, se entrega en partes
+        // Si ninguna unidad libre puede llevar un pedido completo y no puede esperar, se entrega en partes
         for (EntregasParciales.Division d : EntregasParciales.dividir(disponibles, libres, red, t, ventanaH, capacidadMaximaFlota)) {
             pendientes.remove(d.original());
             pendientes.addAll(d.partes());
@@ -659,7 +657,7 @@ public class MotorSimulacion {
             if (ruta.getParadas().isEmpty()) continue;
             Vehiculo v = ruta.getVehiculoAsignado();
             List<Pedido> orden = new ArrayList<>(ruta.getPedidosEnOrden());
-            // P19: la unidad debe estar de vuelta antes de su mantenimiento; si no, se quitan paradas del final
+            // La unidad debe estar de vuelta antes de su mantenimiento; si no, se quitan paradas del final
             double limite = v.limiteRetorno(t);
             if (!Double.isInfinite(limite)) {
                 Ruta prueba = new Ruta(ruta.getIdRuta(), v, operacion.getTiempoServicioH());
@@ -702,9 +700,9 @@ public class MotorSimulacion {
     }
 
     /**
-     * Almacen al que vuelve la unidad (A10): el mas cercano a su ultima entrega
+     * Almacen al que vuelve la unidad: el mas cercano a su ultima entrega
      * que tenga stock para recargarla (el central siempre tiene). Si tiene un
-     * mantenimiento preventivo en las proximas 48 h, vuelve a su almacen base (P19).
+     * mantenimiento preventivo en las proximas 48 h, vuelve a su almacen base.
      */
     private Almacen elegirAlmacenRetorno(Vehiculo v, Coordenada desde, double t) {
         if (v.limiteRetorno(t) - t < 48.0) return v.getAlmacenBase();
@@ -751,7 +749,7 @@ public class MotorSimulacion {
     }
 
     /**
-     * Reprogramacion (A21): un pedido que ya no puede llegar dentro del plazo
+     * Reprogramacion: un pedido que ya no puede llegar dentro del plazo
      * comprometido ni saliendo ahora desde el almacen mas cercano a la mayor
      * velocidad queda registrado como incumplido y se sigue atendiendo con un
      * nuevo plazo operativo (la politica es que todo llegue en plazo; esto solo
@@ -800,11 +798,11 @@ public class MotorSimulacion {
     }
 
     // =====================================================================
-    // Mantenimiento preventivo (P19)
+    // Mantenimiento preventivo
     // =====================================================================
 
     /**
-     * P19, nota 2: si una unidad sigue en ruta al empezar su mantenimiento (00:00), retorna de inmediato a su
+     * Si una unidad sigue en ruta al empezar su mantenimiento (00:00), retorna de inmediato a su
      * almacen aunque no haya entregado; lo que llevaba se vuelve a planificar. El planificador ya lo evita
      * (recorta paradas para volver antes), pero un recalculo posterior por averia, bloqueo o reasignacion
      * puede alargar la ruta.
@@ -828,7 +826,7 @@ public class MotorSimulacion {
     }
 
     // =====================================================================
-    // Bloqueos (B9)
+    // Bloqueos
     // =====================================================================
 
     private void procesarInicioBloqueos(double t) {
@@ -859,7 +857,7 @@ public class MotorSimulacion {
         }
     }
 
-    /** true si lo que falta del tramo en curso pasa por algun nodo del bloqueo mientras rige. */
+    /** True si lo que falta del tramo en curso pasa por algun nodo del bloqueo mientras rige. */
     private boolean cruzaNodosEnTramoActual(RutaEnCurso r, double t, Set<Long> nodos, double finBloqueo) {
         Trayectoria tr = r.getTrayectoria();
         int i = tr.indiceEn(t);
@@ -874,7 +872,7 @@ public class MotorSimulacion {
         return false;
     }
 
-    /** true si lo que falta de la ruta recorre el tramo (x1,y1)-(x2,y2) en cualquier sentido. */
+    /** True si lo que falta de la ruta recorre el tramo (x1,y1)-(x2,y2) en cualquier sentido. */
     private boolean cruzaTramo(RutaEnCurso r, double t, int x1, int y1, int x2, int y2) {
         Trayectoria tr = r.getTrayectoria();
         int i = Math.max(0, tr.indiceEn(t) - 1);
@@ -953,7 +951,7 @@ public class MotorSimulacion {
     }
 
     // =====================================================================
-    // Averias (B10, B11)
+    // Averias
     // =====================================================================
 
     private boolean aplicarAveria(VehiculoSim vs, TipoAveria tipo, double t, String causa, String origen) {
@@ -1013,7 +1011,7 @@ public class MotorSimulacion {
         return true;
     }
 
-    /** Transbordo (B10): la parte que llevaba la unidad averiada vuelve a planificarse; si es critica se busca carga en transito (B11). */
+    /** Transbordo: la parte que llevaba la unidad averiada vuelve a planificarse; si es critica se busca carga en transito. */
     private void transbordar(Pedido parte, VehiculoSim averiado, double t) {
         transbordar(parte, averiado, t, "sufrió una avería", "por avería");
     }
@@ -1030,7 +1028,7 @@ public class MotorSimulacion {
         pendientes.add(nueva);
         registrarEvento(t, "TRANSBORDO", averiado.getId(), parte.getIdPedidoOrigen(),
                 "Pedido " + parte.getIdPedidoOrigen() + ": su carga en " + averiado.getId() + " se vuelve a planificar " + causa + ".");
-        // si ninguna unidad libre alcanza a llegar con margen, se busca carga en transito (B11)
+        // si ninguna unidad libre alcanza a llegar con margen, se busca carga en transito
         if (llegadaMasTempranaConUnidadLibre(nueva, t) + 0.25 > nueva.getHoraLimite()) intentarReasignacion(nueva, t, averiado);
     }
 
@@ -1070,7 +1068,7 @@ public class MotorSimulacion {
     }
 
     /**
-     * Reasignacion de carga en transito (B11): busca una unidad en camino que
+     * Reasignacion de carga en transito: busca una unidad en camino que
      * lleve paquetes para un cliente con mas holgura y que pueda llegar a
      * tiempo al pedido critico; le entrega a este esos paquetes y el pedido que
      * los cede se vuelve a despachar desde un almacen dentro de su propio plazo.
@@ -1173,7 +1171,7 @@ public class MotorSimulacion {
     }
 
     // =====================================================================
-    // Colapso logistico (B24, D21)
+    // Colapso logistico
     // =====================================================================
 
     private void verificarColapso(double t) {
@@ -1224,7 +1222,7 @@ public class MotorSimulacion {
     // Comandos desde el visualizador y el registro de pedidos
     // =====================================================================
 
-    /** Cierra o vuelve a abrir un tramo de calle (bloqueo manual, V-2). Devuelve true si quedo bloqueado. */
+    /** Cierra o vuelve a abrir un tramo de calle (bloqueo manual). Devuelve true si quedo bloqueado. */
     public boolean alternarBloqueoTramo(int x1, int y1, int x2, int y2) {
         return conCandado(() -> {
             double t = horaActual;
@@ -1264,7 +1262,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Registro de un pedido en la operacion dia a dia (A1, A2, A5, A14, A15, A25; prototipo V-2). */
+    /** Registro de un pedido en la operacion dia a dia. */
     public SeguimientoPedido registrarPedido(String idCliente, String nombreCliente, int x, int y, int cantidad,
                                              TipoEntrega tipo, CanalPedido canal, String observaciones) {
         return conCandado(() -> {
@@ -1288,7 +1286,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Carga masiva de pedidos durante la operacion dia a dia (A9): horas relativas al mes en curso. */
+    /** Carga masiva de pedidos durante la operacion dia a dia: horas relativas al mes en curso. */
     public int cargarPedidosEnLote(List<RegistroVenta> registros) {
         return conCandado(() -> {
             if (parametros.getEscenario() != Escenario.TIEMPO_REAL) {
@@ -1313,7 +1311,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Edicion de un pedido que todavia no sale del almacen (A6). */
+    /** Edicion de un pedido que todavia no sale del almacen. */
     public SeguimientoPedido editarPedido(String id, Integer cantidad, TipoEntrega tipo, String observaciones) {
         return conCandado(() -> {
             SeguimientoPedido s = pedidos.get(id);
@@ -1344,7 +1342,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Cancelacion de un pedido antes de su despacho (A7). */
+    /** Cancelacion de un pedido antes de su despacho. */
     public SeguimientoPedido cancelarPedido(String id, String motivo) {
         return conCandado(() -> {
             SeguimientoPedido s = pedidos.get(id);
@@ -1360,7 +1358,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Registro de una averia desde el visualizador (D7). */
+    /** Registro de una averia desde el visualizador. */
     public boolean registrarAveria(String idVehiculo, TipoAveria tipo, String causa) {
         return conCandado(() -> {
             VehiculoSim vs = vehiculoPorId.get(idVehiculo);
@@ -1374,9 +1372,9 @@ public class MotorSimulacion {
     }
 
     /**
-     * Cambio de velocidades por tipo de unidad con la corrida en marcha (P6, P16, P17): las rutas nuevas ya salen
+     * Cambio de velocidades por tipo de unidad con la corrida en marcha: las rutas nuevas ya salen
      * con la nueva velocidad y, en la siguiente ventana de planificacion, las unidades que estan en ruta recalculan
-     * su recorrido con ella (P17: todo vehiculo en el almacen o en ruta se vuelve a planificar en cada iteracion).
+     * su recorrido con ella.
      */
     public void actualizarVelocidades(Double auto, Double moto, Double bicicleta) {
         conCandado(() -> {
@@ -1393,7 +1391,7 @@ public class MotorSimulacion {
 
     private boolean recalcularPorVelocidad;
 
-    /** P17: en la ventana siguiente a un cambio de velocidad, las unidades en ruta rehacen su recorrido con la nueva velocidad. */
+    /** En la ventana siguiente a un cambio de velocidad, las unidades en ruta rehacen su recorrido con la nueva velocidad. */
     private void aplicarCambioDeVelocidad(double t) {
         if (!recalcularPorVelocidad) return;
         recalcularPorVelocidad = false;
@@ -1413,7 +1411,7 @@ public class MotorSimulacion {
                 + operacion.describirVelocidades() + ").");
     }
 
-    /** Umbrales del semaforo (C10): aplican desde la siguiente actualizacion del mapa. */
+    /** Umbrales del semaforo: aplican desde la siguiente actualizacion del mapa. */
     public void actualizarUmbrales(double verde, double ambar) {
         conCandado(() -> {
             parametros.getUmbrales().setVerde(verde);
@@ -1453,7 +1451,7 @@ public class MotorSimulacion {
         if (oyente != null) oyente.eventoRegistrado(e);
     }
 
-    /** Constancia auditable de un replanteo (B25): solo se persiste, no se muestra como alerta. */
+    /** Constancia auditable de un replanteo: solo se persiste, no se muestra como alerta. */
     private void registrarReplanificacion(EventoReplanificacion evento) {
         if (oyente == null) return;
         oyente.eventoRegistrado(new EventoSimulacion(++secuenciaEventos, evento.getFechaHora(), "REPLANIFICACION_" + evento.getCausa(),
@@ -1484,7 +1482,7 @@ public class MotorSimulacion {
         try {
             double t = horaActual;
             Map<Pedido, String> vehiculoDeParte = new HashMap<>();
-            // E31: unidad, ruta y horas de cada parte que va en una ruta
+            // Unidad, ruta y horas de cada parte que va en una ruta
             Map<Pedido, EstadoVisual.ParteVisual> parteEnRuta = new HashMap<>();
             for (VehiculoSim vs : vehiculos) {
                 RutaEnCurso r = vs.getRuta();
@@ -1503,7 +1501,7 @@ public class MotorSimulacion {
             for (Almacen a : almacenes) {
                 // unidades en ruta que regresan a este almacen, con su hora estimada de llegada
                 List<String> arriban = new ArrayList<>();
-                // E20-E21: partes en transito desde este almacen y partes asignadas que aun no salen
+                // Partes en transito desde este almacen y partes asignadas que aun no salen
                 int enTransito = 0;
                 List<EstadoVisual.PedidoHora> porSalir = new ArrayList<>();
                 for (VehiculoSim vs : vehiculos) {
@@ -1517,7 +1515,7 @@ public class MotorSimulacion {
                         else porSalir.add(new EstadoVisual.PedidoHora(p.getParte().getIdPedidoOrigen(), minutos(r.getHoraInicio())));
                     }
                 }
-                // E22: entregas de las ultimas 24 h simuladas cuyas rutas salieron de este almacen
+                // Entregas de las ultimas 24 h simuladas cuyas rutas salieron de este almacen
                 List<EstadoVisual.PedidoHora> entregadosAlmacen = new ArrayList<>();
                 for (EntregaReciente e : entregasRecientes) {
                     if (e.almacen().equals(a.getIdAlmacen()) && e.hora() >= t - 24.0) {
@@ -1575,7 +1573,7 @@ public class MotorSimulacion {
                             : (esReubicacion(r) ? "Reubicación a " : "Retorno a ") + r.getAlmacenRetorno().getNombre();
                     tray = aplanar(r.getTrayectoria().restanteCompacto(t));
                 }
-                // averia vigente (D10-D13): en el lugar hasta el fin de la inmovilizacion; en taller hasta que vuelve a estar disponible
+                // averia vigente: en el lugar hasta el fin de la inmovilizacion; en taller hasta que vuelve a estar disponible
                 Integer tipoAveria = null;
                 Double finAveriaMin = null;
                 Averia av = vs.getAveria();
@@ -1727,7 +1725,7 @@ public class MotorSimulacion {
     }
 
     /**
-     * F02/F04: rutas ya recorridas por la unidad, de la mas reciente a la mas antigua. Los tramos cerrados con el mismo
+     * Rutas ya recorridas por la unidad, de la mas reciente a la mas antigua. Los tramos cerrados con el mismo
      * id (una ruta cambiada en camino por bloqueo, averia o reasignacion) se unen en una sola ruta. Si se indica un
      * pedido, solo las rutas que hicieron escala para ese pedido, y solo con esas escalas.
      */
@@ -1818,7 +1816,7 @@ public class MotorSimulacion {
                 s.getCanal().getEtiqueta(), s.getObservaciones(), partes, s.esModificable(), evs, rutasAnterioresDePedido(s));
     }
 
-    /** F04: rutas ya recorridas que llevaron (todo o parte de) este pedido, con solo sus escalas. */
+    /** Rutas ya recorridas que llevaron (todo o parte de) este pedido, con solo sus escalas. */
     private List<DetalleVisual.RutaAnterior> rutasAnterioresDePedido(SeguimientoPedido s) {
         List<DetalleVisual.RutaAnterior> lista = new ArrayList<>();
         for (String idV : s.getVehiculos()) {
@@ -1849,7 +1847,7 @@ public class MotorSimulacion {
         });
     }
 
-    /** Fila de la busqueda de pedidos (A18, A24). */
+    /** Fila de la busqueda de pedidos. */
     public record FilaPedido(String id, String cliente, double x, double y, int cantidad, String tipoEntrega, double plazo,
                              String registro, String limite, String estado, String vehiculos, String entregaReal, Boolean aTiempo,
                              boolean reprogramado, String canal, String observaciones, double holgura, boolean modificable) {
@@ -1895,7 +1893,7 @@ public class MotorSimulacion {
                 redondear(s.estaActivo() ? s.getPedidoOriginal().calcularHolguraPorcentaje(horaActual) : 0, 1), s.esModificable());
     }
 
-    /** Todos los pedidos de la corrida en CSV (A24, D22). */
+    /** Todos los pedidos de la corrida en CSV. */
     public String exportarPedidosCsv() {
         return conCandado(() -> {
             StringBuilder sb = new StringBuilder("id;cliente;x;y;cantidad;tipo_entrega;plazo_h;registro;limite;estado;vehiculos;entrega_real;a_tiempo;reprogramado;canal;observaciones\n");
@@ -1913,10 +1911,10 @@ public class MotorSimulacion {
     }
 
     // =====================================================================
-    // Cierre (V-3, reportes D15-D25)
+    // Cierre
     // =====================================================================
 
-    /** G08-G10: rutas vigentes al momento del cierre (la ultima planificacion estable). Se llama con el candado tomado. */
+    /** Rutas vigentes al momento del cierre (la ultima planificacion estable). Se llama con el candado tomado. */
     private CierreCorrida.UltimaPlanificacion ultimaPlanificacion() {
         List<CierreCorrida.RutaVigente> rutas = new ArrayList<>();
         for (VehiculoSim vs : vehiculos) {
@@ -2110,7 +2108,7 @@ public class MotorSimulacion {
     public long getVersion() { return conCandado(() -> version); }
     public long getTiempoComputoMs() { return conCandado(() -> tiempoComputoNs / 1_000_000L); }
 
-    /** Indicadores numericos para la experimentacion (B23, D20). */
+    /** Indicadores numericos para la experimentacion. */
     public Map<String, Double> indicadores() {
         return conCandado(() -> {
             Map<String, Double> m = new LinkedHashMap<>();

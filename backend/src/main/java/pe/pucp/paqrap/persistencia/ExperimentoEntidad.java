@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
-/** Experimentacion numerica entre los dos algoritmos (B23, D20, C25). */
+/** Experimentacion numerica entre los dos algoritmos. */
 @Entity
 @Table(name = "experimento")
 public class ExperimentoEntidad {

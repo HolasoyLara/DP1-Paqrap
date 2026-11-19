@@ -13,7 +13,7 @@ export interface TooltipApi {
 
 /**
  * Popup compacto al pasar el mouse sobre un vehiculo, pedido o almacen
- * (prototipo v04, "detalle bajo demanda"): resumen esencial y aviso de que un
+ *: resumen esencial y aviso de que un
  * clic abre el detalle completo. Tiene su propio estado para no redibujar el mapa.
  */
 const Tooltip = forwardRef<TooltipApi, { estado: EstadoVisual; minuto: () => number }>(function Tooltip({ estado, minuto }, ref) {

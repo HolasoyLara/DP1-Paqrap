@@ -12,7 +12,7 @@ import pe.pucp.paqrap.simulacion.ServicioExperimentacion;
 import java.util.List;
 import java.util.Map;
 
-/** Experimentacion numerica GA vs ACO (B23, D20, C25). */
+/** Experimentacion numerica GA vs ACO. */
 @RestController
 @RequestMapping("/api/experimentos")
 public class ExperimentosController {

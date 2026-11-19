@@ -5,8 +5,7 @@ import pe.pucp.paqrap.flota.Averia;
 import java.util.List;
 
 /**
- * Redistribuye la carga de una unidad averiada (diagrama, Modulo B; B10):
- * -averiaOrigen: Averia. En una averia tipo 1 la unidad recalcula su ruta con
+ * Redistribuye la carga de una unidad averiada. En una averia tipo 1 la unidad recalcula su ruta con
  * el retraso; en tipos 2 y 3 sus pedidos se transbordan: vuelven a planificarse
  * desde los almacenes o se cubren con la carga de otra unidad en camino
  * (ReasignacionCarga).

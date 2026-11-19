@@ -5,12 +5,8 @@ import pe.pucp.paqrap.registro.Pedido;
 import java.util.List;
 
 /**
- * Plan de distribucion resultante (diagrama, Modulo B): -idPlan, -escenario,
- * -rutas: List<Ruta>, -costoTotal, -kilometrajeTotal, -porcentajeCumplimiento,
- * -fechaGeneracion. +calcularCostoTotal(), +calcularKilometraje(), +esFactible().
- *
- * El escenario se guarda como texto (nombre del enum Escenario de la
- * simulacion) para no acoplar el planificador al componente de simulacion.
+ * Plan de distribucion: rutas, costo, kilometraje y cumplimiento. El escenario se guarda
+ * como texto para no acoplar el planificador a la simulacion.
  */
 public class Plan {
     private final String idPlan;
@@ -33,13 +29,11 @@ public class Plan {
         calcularCumplimiento();
     }
 
-    /** +calcularCostoTotal(): double (diagrama). */
     public double calcularCostoTotal() {
         costoTotal = rutas.stream().mapToDouble(Ruta::getCostoRuta).sum();
         return costoTotal;
     }
 
-    /** +calcularKilometraje(): double (diagrama). */
     public double calcularKilometraje() {
         kilometrajeTotal = rutas.stream().mapToDouble(Ruta::getDistanciaRecorrida).sum();
         return kilometrajeTotal;
@@ -56,7 +50,7 @@ public class Plan {
         return porcentajeCumplimiento;
     }
 
-    /** +esFactible(): boolean (diagrama): 100% de cumplimiento y sin pedidos sin asignar. */
+    /** 100% de cumplimiento y sin pedidos sin asignar. */
     public boolean esFactible() {
         return porcentajeCumplimiento >= 100.0 && pedidosNoAsignados.isEmpty();
     }

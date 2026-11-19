@@ -1,8 +1,7 @@
 package pe.pucp.paqrap.registro;
 
 /**
- * Estados del ciclo de vida del pedido (diagrama de clases, Modulo A: «enumeration» EstadoPedido).
- * Se agrega CANCELADO (A7: cancelar un pedido antes de que sea despachado).
+ * Estados del ciclo de vida del pedido.
  */
 public enum EstadoPedido {
     REGISTRADO("Registrado"),

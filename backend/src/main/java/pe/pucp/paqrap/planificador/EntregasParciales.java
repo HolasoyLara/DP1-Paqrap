@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Entregas parciales (P13 y P14 de Preguntas y Respuestas; A4 de la LE).
+ * Entregas parciales.
  *
  * Se permite entregar un pedido en partes, y cada entrega parcial toma 1 hora
  * de acondicionamiento en el cliente. En cada ventana, un pedido se divide

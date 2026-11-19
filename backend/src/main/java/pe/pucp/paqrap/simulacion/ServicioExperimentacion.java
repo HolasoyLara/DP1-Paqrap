@@ -25,15 +25,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Experimentacion numerica entre las dos metaheuristicas (B23, D20, C25,
- * D23): corre el mismo escenario sin animacion (lo mas rapido posible) con el
+ * Experimentacion numerica entre las dos metaheuristicas:
+ * corre el mismo escenario sin animacion (lo mas rapido posible) con el
  * Genetico y con la Colonia de Hormigas sobre las mismas instancias (mismos
  * archivos, misma fecha de inicio, misma semilla de averias) y compara costo,
  * cumplimiento, kilometraje y tiempo de computo con una prueba t pareada.
  *
  * Cada instancia es un periodo distinto de los datos publicados (por defecto,
  * 5 dias consecutivos a partir de la fecha de inicio); en el escenario de
- * colapso se mide ademas cuantos dias aguanta cada algoritmo (B24).
+ * colapso se mide ademas cuantos dias aguanta cada algoritmo.
  */
 @Service
 public class ServicioExperimentacion {
@@ -274,7 +274,7 @@ public class ServicioExperimentacion {
         return m;
     }
 
-    /** Resultados en CSV (D22). */
+    /** Resultados en CSV. */
     public String csv(String id) {
         Experimento e = obtener(id);
         StringBuilder sb = new StringBuilder("instancia;algoritmo;fecha_inicio;semilla;pedidos;entregados;cumplimiento;costo;km;costo_por_pedido;incumplidos;tiempo_computo_ms;tiempo_real_ms;dias_hasta_colapso;colapso\n");

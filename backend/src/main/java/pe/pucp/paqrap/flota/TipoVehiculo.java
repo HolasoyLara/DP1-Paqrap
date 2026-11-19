@@ -1,6 +1,6 @@
 package pe.pucp.paqrap.flota;
 
-/** Tipo de unidad de transporte y prefijo de su codigo TTNN (P18): TA, TM, TB. */
+/** Tipo de unidad de transporte y prefijo de su codigo TTNN: TA, TM, TB. */
 public enum TipoVehiculo {
     AUTO("TA", "Auto"),
     MOTO("TM", "Moto"),

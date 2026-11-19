@@ -3,7 +3,7 @@ package pe.pucp.paqrap.visualizador;
 import java.util.List;
 
 /**
- * Detalle completo de un vehiculo, pedido o almacen (C18, C19, A8, A20): es
+ * Detalle completo de un vehiculo, pedido o almacen: es
  * lo que muestra el modal "ampliado" del visualizador, con su historial de eventos.
  */
 public final class DetalleVisual {
@@ -23,7 +23,7 @@ public final class DetalleVisual {
     }
 
     /**
-     * F02/F04: ruta ya recorrida, para dibujarla a demanda en el mapa con sus escalas. La trayectoria es plana
+     * Ruta ya recorrida, para dibujarla a demanda en el mapa con sus escalas. La trayectoria es plana
      * [x, y, minuto, x, y, minuto, ...] (minutos simulados desde el inicio de la corrida) y llega solo hasta
      * donde la unidad la recorrio (cierre de la ruta o regreso al almacen).
      */

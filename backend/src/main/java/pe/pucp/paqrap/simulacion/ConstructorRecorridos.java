@@ -16,7 +16,7 @@ import java.util.List;
  * vigentes a la hora en que sale hacia ese punto, igual que el Planificador),
  * lo recorre nodo a nodo a la velocidad de la unidad, inserta las pausas de
  * alimentacion del conductor (JornadaConductor) y la hora de entrega en cada
- * cliente (B5, B7, B14). Asi las horas de la animacion coinciden con las que
+ * cliente. Asi las horas de la animacion coinciden con las que
  * estimo el algoritmo para la misma secuencia.
  */
 final class ConstructorRecorridos {
@@ -115,7 +115,7 @@ final class ConstructorRecorridos {
         }
 
         /**
-         * Camino mas corto (con los bloqueos vigentes a la hora de salida) hasta el destino. P7: en un nodo
+         * Camino mas corto (con los bloqueos vigentes a la hora de salida) hasta el destino. En un nodo
          * bloqueado no se puede seguir de largo ni girar; la unidad que llego a el desde una calle abierta
          * (por ejemplo, para entregar) sale dando media vuelta por donde vino.
          */

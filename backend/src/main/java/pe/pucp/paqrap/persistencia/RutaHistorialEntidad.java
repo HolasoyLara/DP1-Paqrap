@@ -10,7 +10,7 @@ import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
-/** Historial de todas las rutas planificadas y replanificadas, con la causa del cambio (B25, A20). */
+/** Historial de todas las rutas planificadas y replanificadas, con la causa del cambio. */
 @Entity
 @Table(name = "ruta_historial", indexes = @Index(name = "idx_ruta_corrida", columnList = "corridaId"))
 public class RutaHistorialEntidad {

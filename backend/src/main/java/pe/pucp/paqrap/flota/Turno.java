@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Turno de trabajo del conductor (diagrama, Modulo D): jornadas de 8 horas
- * con cambio a las 07:00, 15:00 y 23:00 (enunciado; configurable, D11).
+ * Turno de trabajo del conductor: jornadas de 8 horas
+ * con cambio a las 07:00, 15:00 y 23:00 (configurable).
  *
  * El turno es del conductor, no de la unidad: la unidad sigue operando y el
- * conductor entrante la alcanza donde este (P12). El planificador usa los
+ * conductor entrante la alcanza donde este. El planificador usa los
  * turnos solo para ubicar la hora de alimentacion, ver JornadaConductor.
  */
 public class Turno {
@@ -35,7 +35,7 @@ public class Turno {
         return turnos;
     }
 
-    /** true si la hora dada (modulo 24h) cae dentro de este turno. */
+    /** True si la hora dada (modulo 24h) cae dentro de este turno. */
     public boolean estaVigente(double horaDelDia) {
         double h = horaDelDia % 24.0;
         if (h < 0) h += 24.0;

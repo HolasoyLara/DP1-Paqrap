@@ -1,7 +1,7 @@
 package pe.pucp.paqrap.simulacion;
 
 /**
- * Momento y condiciones en que se produce el colapso logistico (D21, B24):
+ * Momento y condiciones en que se produce el colapso logistico:
  * hora simulada, motivo, cumplimiento en ese instante, pedidos que ya no
  * cumplen su plazo y pedidos que no pueden esperar y no tienen unidad.
  */

@@ -4,8 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Parametro que selecciona el algoritmo activo sin recompilar (diagrama,
- * Modulo B; B21): -algoritmoSeleccionado: String, -parametrosAlgoritmo: Map.
+ * Algoritmo activo y sus parametros, para cambiarlo sin recompilar.
  *
  * Claves reconocidas en parametrosAlgoritmo:
  * - GA: poblacion, generaciones, tasaCruce, tasaMutacion, torneo.

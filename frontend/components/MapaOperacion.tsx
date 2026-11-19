@@ -9,7 +9,7 @@ import {
 import { posicionEnTrayectoria } from '@/lib/useEstadoSimulacion';
 import { GlifoAlmacen, GlifoLlave, GlifoPaquete, GlifoVehiculo } from './Iconos';
 
-// Reticula oficial de la ciudad: 70 x 50 km, origen (0,0) en la esquina inferior izquierda (P4).
+// Reticula oficial de la ciudad: 70 x 50 km, origen (0,0) en la esquina inferior izquierda.
 export const ANCHO_KM = 70;
 export const ALTO_KM = 50;
 const MARGEN = 2;
@@ -74,18 +74,18 @@ export interface Filtros {
   rutas: 'todas' | 'seleccionada' | 'ninguna';
   tipos: Record<string, boolean>;
   unidadesEnAlmacen: boolean;
-  /** F15-F16: colores de ocupacion visibles, compartidos entre las listas del panel y el mapa. */
+  /** Colores de ocupacion visibles, compartidos entre las listas del panel y el mapa. */
   semaforoUT: Record<SemaforoOcupacion, boolean>;
   semaforoAlmacen: Record<SemaforoOcupacion, boolean>;
-  /** E11/F18: almacen de origen de las unidades visibles ('' = todos), compartido entre el panel y el mapa. */
+  /** Almacen de origen de las unidades visibles ('' = todos), compartido entre el panel y el mapa. */
   origen: string;
-  /** E11 (ficha): rango de km al proximo destino en la lista de Transporte ('' = todos). Se guarda aqui para que el filtro sea permanente. */
+  /** Rango de km al proximo destino en la lista de Transporte ('' = todos). Se guarda aqui para que el filtro sea permanente. */
   rangoKm: RangoKm;
-  /** F17: almacenes ocultos por el usuario (ids), compartido entre el panel y el mapa. */
+  /** Almacenes ocultos por el usuario (ids), compartido entre el panel y el mapa. */
   almacenesOcultos: string[];
 }
 
-/** E11 (ficha): rangos [desde, hasta[ en km al proximo destino. */
+/** Rangos [desde, hasta[ en km al proximo destino. */
 export type RangoKm = '' | '0-10' | '10-20' | '20-40' | '40-200';
 export const RANGOS_KM: [Exclude<RangoKm, ''>, number, number, string][] = [
   ['0-10', 0, 10, '0 a 10 km'], ['10-20', 10, 20, '10 a 20 km'], ['20-40', 20, 40, '20 a 40 km'], ['40-200', 40, 200, '40 a 200 km'],
@@ -116,7 +116,7 @@ export function vehiculoPasaFiltro(v: VehiculoVisual, f: Filtros, verde: number,
 }
 
 /**
- * El almacen pasa el filtro por almacen (F17) y el de semaforo de ocupacion (F15; el central, sin semaforo, siempre
+ * El almacen pasa el filtro por almacen y el de semaforo de ocupacion (el central, sin semaforo, siempre
  * lo pasa). Ambos se eligen en el panel y se reflejan en el mapa.
  */
 export function almacenPasaFiltro(a: AlmacenVisual, f: Filtros, verde: number, ambar: number): boolean {
@@ -142,7 +142,7 @@ interface Props {
   onHover: (s: Seleccion | null, clientX: number, clientY: number) => void;
   onClicTramo: (x1: number, y1: number, x2: number, y2: number) => void;
   onClicCruce: ((x: number, y: number, clientX: number, clientY: number) => void) | null;
-  /** F02/F04: ruta ya recorrida a dibujar a demanda (null = ninguna). */
+  /** Ruta ya recorrida a dibujar a demanda (null = ninguna). */
   rutaAnterior?: RutaAnterior | null;
 }
 
@@ -153,13 +153,13 @@ const EN_BASE = new Set(['EN_ALMACEN', 'MANTENIMIENTO', 'EN_TALLER']);
 
 export const FUERA_DE_SERVICIO = new Set(['AVERIADA', 'EN_TALLER']);
 
-/** Semaforo de ocupacion de la unidad (C27): 100 * carga / capacidad. */
+/** Semaforo de ocupacion de la unidad: 100 * carga / capacidad. */
 export function ocupacionVehiculo(v: VehiculoVisual, verde: number, ambar: number): { pct: number; sem: SemaforoOcupacion } {
   const pct = porcentaje(v.carga, v.capacidad);
   return { pct, sem: semaforoOcupacion(pct, verde, ambar) };
 }
 
-/** Ocupacion de un almacen intermedio (C21): 100 * stock / capacidad; el central no tiene semaforo. */
+/** Ocupacion de un almacen intermedio: 100 * stock / capacidad; el central no tiene semaforo. */
 export function ocupacionAlmacen(a: AlmacenVisual, verde: number, ambar: number): { pct: number; sem: SemaforoOcupacion } | null {
   if (a.central || a.capacidad == null) return null;
   const pct = porcentaje(a.stock ?? 0, a.capacidad);
@@ -182,7 +182,7 @@ export function urgenciaVehiculo(v: VehiculoVisual, verde: number, ambar: number
 
 const sy = (y: number) => ALTO_KM - y;
 
-/** D10-D13: insignia con el numero y el color del tipo de averia, en la esquina superior derecha del icono. */
+/** Insignia con el numero y el color del tipo de averia, en la esquina superior derecha del icono. */
 export function InsigniaAveria({ tipo, x = 10, y = -10 }: { tipo: number; x?: number; y?: number }) {
   return (
     <g transform={`translate(${x},${y})`}>
@@ -325,7 +325,7 @@ export default function MapaOperacion(props: Props) {
     return m;
   }, [vehiculosVisibles]);
 
-  /** C30: orientacion del glifo segun el tramo actual (calles ortogonales): espejo hacia la izquierda, ±90° en vertical. */
+  /** Orientacion del glifo segun el tramo actual (calles ortogonales): espejo hacia la izquierda, ±90° en vertical. */
   const orientacionGlifo = (v: VehiculoVisual, m: number): string => {
     const n = v.tray.length / 3;
     if (n < 2) return '';
@@ -404,7 +404,7 @@ export default function MapaOperacion(props: Props) {
 
   const ocultarLinea = () => lineaHoverRef.current?.setAttribute('visibility', 'hidden');
 
-  // C05: zoom con pellizco (dos punteros) en pantallas tactiles
+  // Zoom con pellizco (dos punteros) en pantallas tactiles
   const punteros = useRef(new Map<number, { x: number; y: number }>());
   const pellizco = useRef<{ dist0: number; vista0: Vista } | null>(null);
   const distanciaPunteros = () => {
@@ -514,7 +514,7 @@ export default function MapaOperacion(props: Props) {
   const onVistaRef = useRef(onVista);
   onVistaRef.current = onVista;
 
-  // C08: zoom con la rueda, centrado en el cursor, continuo (proporcional a deltaY) y animado ~150 ms
+  // Zoom con la rueda, centrado en el cursor, continuo (proporcional a deltaY) y animado ~150 ms
   const animZoom = useRef<{ desde: Vista; hasta: Vista; t0: number; raf: number } | null>(null);
   useEffect(() => {
     const svg = svgRef.current;
@@ -560,7 +560,7 @@ export default function MapaOperacion(props: Props) {
   }, []);
 
   // ---------------- capas ----------------
-  // F01/F03: al seleccionar un pedido se resaltan las rutas de TODAS las unidades que lo llevan
+  // Al seleccionar un pedido se resaltan las rutas de TODAS las unidades que lo llevan
   const claveResaltados = seleccion?.tipo === 'vehiculo' ? seleccion.id
     : seleccion?.tipo === 'pedido' ? vehiculosDePedido(estado, seleccion.id).join(',') : '';
   const resaltados = useMemo(() => new Set(claveResaltados ? claveResaltados.split(',') : []), [claveResaltados]);
@@ -650,7 +650,7 @@ export default function MapaOperacion(props: Props) {
           );
         })}
 
-        {/* F02/F04: ruta ya recorrida, dibujada a demanda desde el detalle, con sus escalas numeradas */}
+        {/* Ruta ya recorrida, dibujada a demanda desde el detalle, con sus escalas numeradas */}
         {props.rutaAnterior && (() => {
           const ra = props.rutaAnterior;
           const pts: string[] = [];

@@ -7,18 +7,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Vehiculo (diagrama de clases, Modulo D): «abstract» con capacidad, velocidad
+ * Vehiculo: con capacidad, velocidad
  * y costo por km propios de cada especializacion (Auto/Moto/Bicicleta).
  *
- * - Codigo TTNN (P18): TA = auto, TM = moto, TB = bicicleta, NN = correlativo.
+ * - Codigo TTNN: TA = auto, TM = moto, TB = bicicleta, NN = correlativo.
  * - La unidad opera las 24 horas; en el cambio de turno solo cambia el
- *   conductor (P12). La pausa de alimentacion de cada conductor se aplica con
+ *   conductor. La pausa de alimentacion de cada conductor se aplica con
  *   avanzar(), ver JornadaConductor.
- * - No esta disponible durante su mantenimiento preventivo (P19) y debe estar
+ * - No esta disponible durante su mantenimiento preventivo y debe estar
  *   de vuelta en el almacen antes de que empiece.
- * - Tampoco esta disponible mientras dura una averia (D7, ver TipoAveria).
+ * - Tampoco esta disponible mientras dura una averia.
  * - Sale del almacen donde esta estacionada (almacenBase). Al inicio de
- *   cualquier escenario todas estan en el almacen central (P10); despues de
+ *   cualquier escenario todas estan en el almacen central; despues de
  *   una ruta pueden quedar en un almacen intermedio para recargar ahi.
  */
 public abstract class Vehiculo {
@@ -45,7 +45,6 @@ public abstract class Vehiculo {
     public abstract double getVelocidadPromedioKmH();
     public abstract double getCostoPorKm();
 
-    /** +estaDisponible(): boolean (diagrama). */
     public boolean estaDisponible() {
         return "DISPONIBLE".equals(estadoOperativo);
     }
@@ -53,12 +52,10 @@ public abstract class Vehiculo {
     public void setEstadoOperativo(String estadoOperativo) { this.estadoOperativo = estadoOperativo; }
     public String getEstadoOperativo() { return estadoOperativo; }
 
-    /** +calcularTiempoViaje(distanciaKm): Duration (diagrama; se expresa en horas). */
     public double calcularTiempoViaje(double distanciaKm) {
         return distanciaKm / getVelocidadPromedioKmH();
     }
 
-    /** +calcularCostoViaje(distanciaKm): double (diagrama). */
     public double calcularCostoViaje(double distanciaKm) {
         return distanciaKm * getCostoPorKm();
     }
@@ -76,7 +73,7 @@ public abstract class Vehiculo {
         periodosMantenimiento.addAll(periodos);
     }
 
-    /** true si la unidad puede salir a la hora dada: no esta averiada ni en mantenimiento. */
+    /** True si la unidad puede salir a la hora dada: no esta averiada ni en mantenimiento. */
     public boolean estaOperativa(double hora) {
         if (!estaDisponible()) return false;
         if (hora < indisponibleHasta) return false;
@@ -115,7 +112,7 @@ public abstract class Vehiculo {
     // Ubicacion
     // ------------------------------------------------------------------
 
-    /** Coordenada del almacen desde donde sale la unidad (punto de partida operativo, no fijado por el diagrama). */
+    /** Coordenada del almacen desde donde sale la unidad. */
     public Coordenada getAlmacenOrigen() { return almacenBase.getUbicacion(); }
     public Almacen getAlmacenBase() { return almacenBase; }
     public void setAlmacenBase(Almacen almacenBase) { this.almacenBase = almacenBase; }

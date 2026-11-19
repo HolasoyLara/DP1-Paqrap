@@ -28,7 +28,7 @@ export interface AvisoLocal {
 }
 
 /**
- * Alertas visuales (C22): cuando ocurre una reasignacion de pedidos entre
+ * Alertas visuales: cuando ocurre una reasignacion de pedidos entre
  * vehiculos, una averia, un recalculo por bloqueo o el colapso, aparece un
  * aviso que se cierra solo. Las alertas que ya existian al abrir la pagina no
  * se repiten.

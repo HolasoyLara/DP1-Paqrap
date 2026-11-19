@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * Estadistica descriptiva y prueba t pareada para la experimentacion numerica
- * entre las dos metaheuristicas (B23). La distribucion t de Student se evalua
+ * entre las dos metaheuristicas. La distribucion t de Student se evalua
  * con la funcion beta incompleta regularizada (fraccion continua de Lentz).
  */
 public final class Estadistica {

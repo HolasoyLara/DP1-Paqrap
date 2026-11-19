@@ -29,10 +29,10 @@ const ESTADO_TEXTO: Record<string, string> = {
   DETENIDA: 'Corrida: detenida',
 };
 
-/** Unidades fuera de servicio: no cuentan en la ocupacion global de la flota (G01). */
+/** Unidades fuera de servicio: no cuentan en la ocupacion global de la flota. */
 const FUERA_DE_SERVICIO = new Set(['AVERIADA', 'EN_TALLER', 'MANTENIMIENTO']);
 
-/** G01-G04: ocupacion global de la flota operativa y de los almacenes intermedios (el central no tiene limite). */
+/** Ocupacion global de la flota operativa y de los almacenes intermedios (el central no tiene limite). */
 export function ocupacionesGlobales(estado: EstadoVisual) {
   let carga = 0, cap = 0;
   for (const v of estado.vehiculos) {
@@ -66,8 +66,8 @@ function KpiGlobal({ etiqueta, pct, sem, sub }: { etiqueta: string; pct: number;
 }
 
 /**
- * Encabezado permanente: escenario activo, los 4 tiempos de la rubrica (C12-C16) en un bloque 2x2,
- * los indicadores globales de ocupacion (G01-G04) y los controles de la corrida: iniciar, detener y, en 5 dias y
+ * Encabezado permanente: escenario activo, los 4 tiempos en un bloque 2x2,
+ * los indicadores globales de ocupacion y los controles de la corrida: iniciar, detener y, en 5 dias y
  * colapso, pausar y cambiar la velocidad.
  */
 export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoTexto, puedeIniciar, ocupado, onIniciar, onDetener, onRitmo, onMenu }: Props) {
@@ -100,7 +100,7 @@ export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoT
   }
   const segundosReales = estado ? (enCurso ? base.seg + (performance.now() - base.desde) / 1000 : estado.tiempoRealSeg) : 0;
 
-  // indicadores globales de ocupacion (G01-G04)
+  // indicadores globales de ocupacion
   const { flota, almacenes } = estado && hayCorrida ? ocupacionesGlobales(estado) : { flota: null, almacenes: null };
   const verde = estado?.umbralVerde ?? 50;
   const ambar = estado?.umbralAmbar ?? 20;
@@ -129,7 +129,7 @@ export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoT
               sub={`${numero(almacenes.stock)} / ${numero(almacenes.cap)} · intermedios (central sin límite)`} />
           </div>
         )}
-        {/* C12-C15: los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
+        {/* Los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
         {estado?.escenario !== 'TIEMPO_REAL' && <div className="reloj-2x2" aria-live="polite">
           <div className="reloj-celda"><span>Fecha y hora simulada</span><b>{simulada}</b></div>
           <div className="reloj-celda"><span>Transcurrido simulado</span><b>{hayCorrida ? transcurridoSimulado(minuto) : '—'}</b></div>

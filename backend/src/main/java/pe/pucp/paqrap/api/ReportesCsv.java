@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Map;
 
-/** Exportacion de reportes a hoja de calculo (D22, A24): CSV separado por ";" con BOM para Excel. */
+/** Exportacion de reportes a hoja de calculo: CSV separado por ";" con BOM para Excel. */
 final class ReportesCsv {
 
     private ReportesCsv() {

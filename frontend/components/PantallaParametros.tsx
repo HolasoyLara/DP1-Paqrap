@@ -18,7 +18,7 @@ interface Props {
   onSubir: (tipo: string, archivos: File[]) => void;
   onQuitar: (tipo: string) => void;
   onUmbralesEnVivo: (verde: number, ambar: number) => void;
-  /** P6, P16, P17: cambio de velocidad por tipo de unidad con la corrida en marcha (en caliente). */
+  /** Cambio de velocidad por tipo de unidad con la corrida en marcha (en caliente). */
   onVelocidadesEnVivo: (auto: number, moto: number, bicicleta: number) => void;
 }
 
@@ -90,7 +90,7 @@ function duracionTexto(f: ParametrosCorrida): string {
   return `Hasta detectar el colapso · 1 día simulado ≈ ${minPorDia.toFixed(1)} min reales`;
 }
 
-/** V-1 · Parametros de la corrida: todo lo que determina el resultado, para que sea reproducible y auditable. */
+/** Parametros de la corrida: todo lo que determina el resultado, para que sea reproducible y auditable. */
 export default function PantallaParametros(props: Props) {
   const { config, form, setForm, archivos, bloqueado } = props;
   const entradas = useRef<Record<string, HTMLInputElement | null>>({});
@@ -101,7 +101,7 @@ export default function PantallaParametros(props: Props) {
   const algoritmo = config.algoritmos.find((a) => a.id === form.algoritmo);
   const archivosValidos = !!archivos && archivos.every((a) => a.valido);
 
-  // cambios de turno: se edita como texto libre y solo se guarda cuando hay 3 horas validas (antes revertia al escribir)
+  // Cambios de turno: texto libre que solo se guarda cuando hay 3 horas validas
   const [textoTurnos, setTextoTurnos] = useState(op.horasCambioTurno.join(', '));
   const [turnoValido, setTurnoValido] = useState(true);
   useEffect(() => {

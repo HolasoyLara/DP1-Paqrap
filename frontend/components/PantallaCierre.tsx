@@ -48,7 +48,7 @@ function Kpi({ etiqueta, valor, sub }: { etiqueta: string; valor: string; sub?: 
   );
 }
 
-/** V-3 · Cierre del periodo y reportes del Modulo D (D15-D25), con el historial de corridas. */
+/** Cierre del periodo y sus reportes, con el historial de corridas. */
 export default function PantallaCierre({ estado, cierreRecibido }: Props) {
   const [cierre, setCierre] = useState<CierreCorrida | null>(cierreRecibido);
   const [error, setError] = useState<string | null>(null);

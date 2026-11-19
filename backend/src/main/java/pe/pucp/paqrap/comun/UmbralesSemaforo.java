@@ -1,13 +1,13 @@
 package pe.pucp.paqrap.comun;
 
 /**
- * Rangos configurables del semaforo (C10, requisito no funcional d).
+ * Rangos configurables del semaforo.
  *
  * Se expresan como % de holgura de plazo restante (para pedidos) o % de stock
  * (para almacenes intermedios): verde si el valor es mayor o igual a "verde",
  * ambar si es mayor o igual a "ambar", rojo en otro caso. Por definicion el
- * limite inferior del ambar y el del rojo son el mismo valor (prototipo V-1).
- * Valores por defecto del prototipo v04: verde >= 50 %, ambar >= 20 %, rojo < 20 %.
+ * limite inferior del ambar y el del rojo son el mismo valor.
+ * Valores por defecto: verde >= 50 %, ambar >= 20 %, rojo < 20 %.
  */
 public class UmbralesSemaforo {
 
@@ -25,7 +25,6 @@ public class UmbralesSemaforo {
         normalizar();
     }
 
-    /** +clasificar(porcentaje): Color. */
     public Color clasificar(double porcentaje) {
         if (porcentaje >= verde) return Color.VERDE;
         if (porcentaje >= ambar) return Color.AMBAR;

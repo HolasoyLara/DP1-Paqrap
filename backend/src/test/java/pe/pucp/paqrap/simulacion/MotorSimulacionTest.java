@@ -65,7 +65,7 @@ class MotorSimulacionTest {
         System.out.println("Cierre ACO: " + m.generarCierre("FINALIZADA", 0, 1000).resumen());
     }
 
-    /** P6, P16, P17: el cambio de velocidad por tipo aplica en la siguiente ventana, tambien a las unidades en ruta. */
+    /** El cambio de velocidad por tipo aplica en la siguiente ventana, tambien a las unidades en ruta. */
     @Test
     void cambioDeVelocidadEnCalienteRecalculaLasRutasEnCurso() {
         ParametrosCorrida p = new ParametrosCorrida();

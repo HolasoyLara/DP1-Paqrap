@@ -5,13 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Jornada de los conductores y hora de alimentacion (D4, D5, B13, B14).
+ * Jornada de los conductores y hora de alimentacion.
  *
- * - Turnos de 8 horas con cambio a las 07:00, 15:00 y 23:00 (enunciado;
- *   configurables, D11).
+ * - Turnos de 8 horas con cambio a las 07:00, 15:00 y 23:00 (enunciado; configurables).
  * - La unidad de transporte no se detiene en el cambio de turno: el conductor
- *   entrante la alcanza donde este y el cambio toma un tiempo despreciable
- *   (P12 de Preguntas y Respuestas). Por eso las unidades operan las 24 horas.
+ *   entrante la alcanza donde este y el cambio toma un tiempo despreciable.
+ *   Por eso las unidades operan las 24 horas.
  * - Cada conductor tiene 1 hora de alimentacion dentro de su jornada, al menos
  *   una hora despues del cambio de turno y al menos una hora antes del
  *   siguiente (enunciado). La hora se escalona por el correlativo de la
@@ -58,7 +57,7 @@ public final class JornadaConductor {
         return mejor;
     }
 
-    /** true si en el instante t el conductor de la unidad esta en su hora de alimentacion. */
+    /** True si en el instante t el conductor de la unidad esta en su hora de alimentacion. */
     public boolean estaEnPausa(int correlativo, double t) {
         if (duracionAlimentacionH <= 0) return false;
         double pausa = proximaPausa(correlativo, t);

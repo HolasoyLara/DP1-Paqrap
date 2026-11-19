@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Secuencia de paradas asignada a un vehiculo (diagrama, Modulo B):
- * -idRuta, -vehiculoAsignado, -paradas: List<ParadaRuta>, -distanciaRecorrida, -costoRuta.
- * +agregarParada(p), +calcularTiempoTotal(): Duration.
- *
- * La ruta sale del almacen donde esta la unidad (getAlmacenOrigen()).
+ * Secuencia de paradas asignada a un vehiculo. Sale del almacen donde esta la unidad.
  */
 public class Ruta {
     private final String idRuta;
@@ -33,7 +29,6 @@ public class Ruta {
         this.paradas = new ArrayList<>();
     }
 
-    /** +agregarParada(p: ParadaRuta) (diagrama). */
     public void agregarParada(ParadaRuta p) { paradas.add(p); }
 
     public List<Pedido> getPedidosEnOrden() {
@@ -63,7 +58,7 @@ public class Ruta {
             distanciaTotal += tramo;
             horaActual = vehiculoAsignado.avanzar(horaActual, vehiculoAsignado.calcularTiempoViaje(tramo));
             nuevasParadas.add(new ParadaRuta(secuencia++, p, horaActual, tiempoServicioH));
-            horaActual = vehiculoAsignado.avanzar(horaActual, tiempoServicioH); // entrega de 1 hora (B7), con pausa de alimentacion si toca
+            horaActual = vehiculoAsignado.avanzar(horaActual, tiempoServicioH); // entrega de 1 hora, con pausa de alimentacion si toca
             posicionActual = p.getUbicacion();
         }
         this.horaInicio = horaInicio;
@@ -74,7 +69,6 @@ public class Ruta {
         this.costoRuta = vehiculoAsignado.calcularCostoViaje(distanciaTotal);
     }
 
-    /** +calcularTiempoTotal(): Duration (diagrama; hora simulada en que termina la ultima entrega). */
     public double calcularTiempoTotal() {
         if (paradas.isEmpty()) return 0.0;
         return horaFinEntregas;

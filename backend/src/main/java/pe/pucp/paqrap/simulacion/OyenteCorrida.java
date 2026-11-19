@@ -1,8 +1,8 @@
 package pe.pucp.paqrap.simulacion;
 
 /**
- * Recibe lo que la corrida debe persistir mientras avanza (B25: historial de
- * rutas planificadas y replanificadas con la causa del cambio; D19: incidencias).
+ * Recibe lo que la corrida debe persistir mientras avanza (historial de
+ * rutas planificadas y replanificadas con la causa del cambio, e incidencias).
  * Las corridas de experimentacion no usan oyente.
  */
 public interface OyenteCorrida {

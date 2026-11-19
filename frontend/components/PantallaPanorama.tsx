@@ -33,7 +33,7 @@ interface Props {
   refrescar: () => void;
   /** Pedido de enfoque desde fuera (boton «Ver ruta en el mapa»); `n` cambia en cada pedido. */
   foco: { x: number; y: number; n: number } | null;
-  /** F02/F04: ruta ya recorrida dibujada a demanda y su cierre. */
+  /** Ruta ya recorrida dibujada a demanda y su cierre. */
   rutaAnterior: RutaAnterior | null;
   onOcultarRutaAnterior: () => void;
 }
@@ -75,7 +75,7 @@ function PanelFlotante({ titulo, className, onCerrar, children }: { titulo: stri
   );
 }
 
-/** V-2 · Panorama operativo: franja de KPI, mapa con la operacion en vivo y detalle bajo demanda. */
+/** Panorama operativo: franja de KPI, mapa con la operacion en vivo y detalle bajo demanda. */
 export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbrir, onAviso, refrescar, foco, rutaAnterior, onOcultarRutaAnterior }: Props) {
   const [vista, setVista] = useState<Vista>(VISTA_COMPLETA);
   const [zona, setZona] = useState('full');
@@ -90,7 +90,7 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
   const [menu, setMenu] = useState<{ x: number; y: number; cx: number; cy: number } | null>(null);
   const [cantidadMenu, setCantidadMenu] = useState(1);
   const tooltip = useRef<TooltipApi>(null);
-  // E01: panel izquierdo con las listas; empieza recogido
+  // Panel izquierdo con las listas; empieza recogido
   const [verPanel, setVerPanel] = useState(false);
   const [pestanaPanel, setPestanaPanel] = useState<PestanaPanel>('transporte');
 
@@ -100,19 +100,19 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
   const intermedios = estado.almacenes.filter((a) => !a.central);
   const central = estado.almacenes.find((a) => a.central);
 
-  // zona visible: local a este dispositivo (C6), no se sincroniza con los demas
+  // zona visible: local a este dispositivo, no se sincroniza con los demas
   useEffect(() => {
     setVista(vistaDeZona(zona));
   }, [zona]);
 
-  /** Centra el mapa en (x, y) sin alejar la vista (F05-F09). */
+  /** Centra el mapa en (x, y) sin alejar la vista. */
   const enfocar = useCallback((x: number, y: number) => setVista((v) => centrarEn(v, x, y)), []);
 
   useEffect(() => {
     if (foco) enfocar(foco.x, foco.y);
   }, [foco, enfocar]);
 
-  // F06/F08: un clic en el mapa lleva el panel (si esta abierto) a la lista que corresponde y resalta la fila
+  // Un clic en el mapa lleva el panel (si esta abierto) a la lista que corresponde y resalta la fila
   useEffect(() => {
     if (!seleccion) return;
     setPestanaPanel(seleccion.tipo === 'vehiculo' ? 'transporte' : seleccion.tipo === 'almacen' ? 'almacenes' : 'envios');

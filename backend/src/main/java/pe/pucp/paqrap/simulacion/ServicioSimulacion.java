@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Corrida visual del sistema (una a la vez, compartida por todos los
  * dispositivos conectados, C5): la inicia o detiene cualquier usuario desde
- * V-1/V-2 y todos ven el mismo reloj, la misma flota y los mismos pedidos.
+ * las pantallas y todos ven el mismo reloj, la misma flota y los mismos pedidos.
  * Los comandos (bloquear un tramo, registrar un pedido o una averia) se
  * aplican sobre esa corrida en el instante simulado actual.
  */
@@ -77,7 +77,7 @@ public class ServicioSimulacion {
         return corrida.getUltimoEstado();
     }
 
-    /** Detiene la corrida en curso y devuelve su cierre (V-3). */
+    /** Detiene la corrida en curso y devuelve su cierre. */
     public CierreCorrida detener() {
         Corrida c = actual;
         if (c == null) throw new NoSuchElementException("No hay ninguna corrida iniciada.");

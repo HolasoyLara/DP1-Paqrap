@@ -5,7 +5,7 @@ import { api } from './api';
 import type { EstadoVisual } from './tipos';
 
 /**
- * Consulta periodica del estado compartido de la corrida (C5, C20). Entre dos
+ * Consulta periodica del estado compartido de la corrida. Entre dos
  * consultas, el reloj de la simulacion se extrapola en el navegador con el
  * factor de aceleracion, y las unidades se mueven sobre su trayectoria: asi el
  * mapa se anima con fluidez sin pedir la posicion a cada instante.

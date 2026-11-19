@@ -1,8 +1,8 @@
 package pe.pucp.paqrap.simulacion;
 
 /**
- * «enumeration» Escenario (diagrama, Modulo D): tipo de corrida que resuelve
- * el mismo Planificador mediante parametros (B21, RAN-08). Lo unico que cambia
+ * Tipo de corrida que resuelve
+ * el mismo Planificador mediante parametros. Lo unico que cambia
  * entre escenarios es el reloj de la corrida, el origen de los pedidos y la
  * condicion de cierre; el motor de ruteo es el mismo.
  */

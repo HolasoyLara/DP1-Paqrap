@@ -11,16 +11,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Pedido del cliente con su trazabilidad completa (Modulo A: A8, A12, A14,
- * A15, A19, A20, A21, A25; diagrama: HistorialEstadoPedido).
+ * Pedido del cliente con su trazabilidad completa (historial de estados).
  *
  * El Planificador trabaja con objetos Pedido, que pueden ser el pedido entero o
  * partes de el (entregas parciales, transbordos por averia o reasignaciones de
  * carga). Esta clase agrupa todas las partes de un mismo pedido del cliente y
  * deriva su estado: el pedido esta entregado cuando se entregaron todas sus
  * unidades, y cuenta como entregado a tiempo solo si todas sus partes llegaron
- * dentro del plazo comprometido (mismo criterio que MainIntegracion del
- * Algoritmo 1).
+ * dentro del plazo comprometido.
  */
 public class SeguimientoPedido {
 
@@ -59,7 +57,7 @@ public class SeguimientoPedido {
     // Partes
     // ------------------------------------------------------------------
 
-    /** Reemplaza una parte activa por otras (division P13, transbordo o reasignacion). */
+    /** Reemplaza una parte activa por otras (division, transbordo o reasignacion). */
     public void reemplazarParte(Pedido parte, List<Pedido> nuevas) {
         partesActivas.remove(parte.getIdPedido());
         for (Pedido p : nuevas) partesActivas.put(p.getIdPedido(), p);
@@ -74,7 +72,7 @@ public class SeguimientoPedido {
         partesActivas.remove(parte.getIdPedido());
     }
 
-    /** Registra la entrega de una parte en el cliente (P11: el plazo se cumple al llegar). */
+    /** Registra la entrega de una parte en el cliente. */
     public void registrarEntrega(Pedido parte, double hora, String idVehiculo) {
         partesActivas.remove(parte.getIdPedido());
         parte.cambiarEstado(EstadoPedido.ENTREGADO);
@@ -119,7 +117,7 @@ public class SeguimientoPedido {
         }
     }
 
-    /** Reprogramacion (A21): el pedido ya no cumple el plazo comprometido. */
+    /** Reprogramacion: el pedido ya no cumple el plazo comprometido. */
     public void marcarIncumplido(double hora, String detalle) {
         incumplido = true;
         if (!reprogramado) {
@@ -165,7 +163,7 @@ public class SeguimientoPedido {
         return incumplido || entregaTardia || estaVencido(horaActual);
     }
 
-    /** true si el pedido todavia no sale de un almacen (se puede editar o cancelar: A6, A7). */
+    /** True si el pedido todavia no sale de un almacen (se puede editar o cancelar: A6, A7). */
     public boolean esModificable() {
         if (!estaActivo()) return false;
         return partesActivas.values().stream().allMatch(p -> p.getEstado() == EstadoPedido.REGISTRADO)

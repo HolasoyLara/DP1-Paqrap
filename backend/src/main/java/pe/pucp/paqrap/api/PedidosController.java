@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Registro de pedidos y clientes (Modulo A): registro (A1, A2, A5, A14, A25),
- * seguimiento por codigo (A8, A12, A20), edicion y cancelacion antes del
- * despacho (A6, A7), carga masiva (A9), busqueda (A18) y exportacion (A24).
+ * Registro de pedidos y clientes (Modulo A): registro,
+ * seguimiento por codigo, edicion y cancelacion antes del
+ * despacho, carga masiva, busqueda y exportacion.
  * El registro se hace sobre la operacion dia a dia en curso.
  */
 @RestController

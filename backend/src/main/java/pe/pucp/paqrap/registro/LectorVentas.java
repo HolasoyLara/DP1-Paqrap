@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * Lee los archivos oficiales ventas.AAAAMM.txt (data publicada por el curso)
- * y tambien los archivos de carga masiva de pedidos (A9), que usan el mismo
+ * y tambien los archivos de carga masiva de pedidos, que usan el mismo
  * formato.
  *
  * Formato de cada linea:
@@ -42,7 +42,7 @@ public final class LectorVentas {
     /**
      * Lee y valida un archivo de ventas.
      *
-     * @param anchoKm ancho de la ciudad (validacion de cobertura, A13)
+     * @param anchoKm ancho de la ciudad (validacion de cobertura)
      * @param altoKm  alto de la ciudad
      */
     public static ResultadoLectura<RegistroVenta> leer(Reader fuente, int anchoKm, int altoKm) throws IOException {

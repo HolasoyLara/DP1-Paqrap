@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-/** Archivos de entrada de las corridas (V-1): validacion de los publicados y carga de personalizados (A9, D6, D7). */
+/** Archivos de entrada de las corridas: validacion de los publicados y carga de personalizados. */
 @RestController
 @RequestMapping("/api/datos")
 public class DatosController {

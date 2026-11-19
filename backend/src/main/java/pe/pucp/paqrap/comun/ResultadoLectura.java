@@ -6,8 +6,7 @@ import java.util.List;
 /**
  * Resultado de leer y validar un archivo de entrada (ventas, bloqueos,
  * averias): los registros validos y las lineas rechazadas con su motivo.
- * Una linea con formato inesperado se omite sin romper el resto de la carga
- * (mismo criterio que LectorVentas del Algoritmo 1 y el prototipo).
+ * Una linea con formato inesperado se omite sin romper el resto de la carga.
  */
 public class ResultadoLectura<T> {
 

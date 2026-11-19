@@ -1,16 +1,9 @@
 package pe.pucp.paqrap.planificador;
 
 /**
- * Planificador (diagrama, Modulo B): -algoritmoActivo: AlgoritmoMetaheuristico.
- * +generarPlan(modelo): Plan. +replanificar(planVigente, evento): Plan.
- * +seleccionarAlgoritmo(config: ConfiguracionAlgoritmo).
- *
- * Es el contexto del patron Strategy: compone el algoritmo activo por
- * configuracion, sin necesidad de recompilar (RAN-03, B21, CA-03). Igual que
- * en MainIntegracion del Algoritmo 1, cada ventana de planificacion usa una
- * instancia nueva del algoritmo con su propia semilla (semilla de la corrida
- * + numero de ventana), asi la corrida es reproducible: misma semilla y
- * mismos archivos dan siempre la misma corrida.
+ * Contexto del patron Strategy: usa el algoritmo elegido por configuracion. Cada ventana
+ * de planificacion crea una instancia nueva del algoritmo con su propia semilla (semilla de
+ * la corrida + numero de ventana), asi misma semilla y mismos archivos dan la misma corrida.
  */
 public class Planificador {
 
@@ -22,7 +15,7 @@ public class Planificador {
     }
 
     /**
-     * +seleccionarAlgoritmo(config): void (diagrama). Acepta "GA"/"GENETICO" o
+     * Acepta "GA"/"GENETICO" o
      * "ACO"/"COLONIA"; cualquier otro valor es un error de uso.
      */
     public void seleccionarAlgoritmo(ConfiguracionAlgoritmo config) {
@@ -34,12 +27,11 @@ public class Planificador {
         this.algoritmoActivo = nombre;
     }
 
-    /** +generarPlan(...): Plan (diagrama). */
     public Plan generarPlan(ModeloRuteo modelo, long semillaVentana) {
         return crearAlgoritmo(semillaVentana).resolver(modelo);
     }
 
-    /** +replanificar(planVigente, evento): Plan (diagrama): vuelve a resolver el modelo de los pedidos afectados. */
+    /** Vuelve a resolver el modelo de los pedidos afectados. */
     public Plan replanificar(ModeloRuteo modeloPendiente, EventoReplanificacion evento, long semilla) {
         return crearAlgoritmo(semilla).resolver(modeloPendiente);
     }

@@ -3,7 +3,7 @@ package pe.pucp.paqrap.flota;
 import pe.pucp.paqrap.comun.Coordenada;
 
 /**
- * Almacen (diagrama de clases, Modulo D): «abstract», con ubicacion e inventario.
+ * Almacen: con ubicacion e inventario.
  */
 public abstract class Almacen {
     private final String idAlmacen;
@@ -18,10 +18,8 @@ public abstract class Almacen {
         this.inventarioActual = inventarioActual;
     }
 
-    /** +despachar(cantidad): boolean (diagrama). */
     public abstract boolean despachar(int cantidad);
 
-    /** +tieneStock(cantidad): boolean (diagrama). */
     public abstract boolean tieneStock(int cantidad);
 
     /** Devuelve al almacen unidades que regresaron sin entregarse. */

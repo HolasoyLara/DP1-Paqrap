@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Lee un archivo de averias programadas (D7).
+ * Lee un archivo de averias programadas.
  *
  * El curso no publico un formato oficial de averias (el prototipo usaba una
  * agenda fija), asi que se define uno con la misma convencion de tiempo que

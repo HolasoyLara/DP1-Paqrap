@@ -33,11 +33,11 @@ export interface AlmacenVisual {
   stock: number | null;
   /** Unidades en ruta que regresan a este almacen, con su hora estimada de llegada. */
   arriban: string[];
-  /** Partes en rutas que ya salieron de este almacen (E20). */
+  /** Partes en rutas que ya salieron de este almacen. */
   pedidosEnTransito: number;
-  /** Partes asignadas que aun no salen, con su minuto simulado de salida (E21). */
+  /** Partes asignadas que aun no salen, con su minuto simulado de salida. */
   porSalir: PedidoHora[];
-  /** Entregas de las ultimas 24 h simuladas de rutas que salieron de este almacen (E22). */
+  /** Entregas de las ultimas 24 h simuladas de rutas que salieron de este almacen. */
   entregados: PedidoHora[];
 }
 
@@ -46,7 +46,7 @@ export interface PedidoHora {
   minuto: number;
 }
 
-/** Parte de un pedido (E31): unidad, ruta, almacen de salida y horas en minutos simulados (null si aun no tiene unidad). */
+/** Parte de un pedido: unidad, ruta, almacen de salida y horas en minutos simulados (null si aun no tiene unidad). */
 export interface ParteVisual {
   id: string;
   vehiculo: string | null;
@@ -84,9 +84,9 @@ export interface VehiculoVisual {
   pedidosCarga: { id: string; cantidad: number }[];
   /** Minuto simulado desde el que la unidad va de regreso al almacen (tramo de retorno de la ruta). */
   retornoDesdeMin: number | null;
-  /** Km recorridos en la ruta actual (E09, E17). */
+  /** Km recorridos en la ruta actual. */
   kmRecorridosRuta: number;
-  /** Almacen del que salio en su ruta actual (o donde esta, si no tiene ruta) (E11). */
+  /** Almacen del que salio en su ruta actual (o donde esta, si no tiene ruta). */
   origen: string;
 }
 
@@ -186,7 +186,7 @@ export interface ParadaDetalle {
   aTiempo: boolean;
 }
 
-/** F02/F04: ruta ya recorrida; trayectoria plana [x, y, minuto, ...] hasta donde se recorrio. */
+/** Ruta ya recorrida; trayectoria plana [x, y, minuto, ...] hasta donde se recorrio. */
 export interface RutaAnterior {
   id: string;
   vehiculo: string;
@@ -427,7 +427,7 @@ export interface CierreCorrida {
   colapso: InfoColapso | null;
   parametros: Record<string, unknown>;
   fuentes: Record<string, string>;
-  /** G08-G10: rutas vigentes al cierre (null en corridas guardadas antes de este cambio). */
+  /** Rutas vigentes al cierre (null en corridas guardadas antes de este cambio). */
   ultimaPlanificacion: {
     fecha: string;
     causa: string;

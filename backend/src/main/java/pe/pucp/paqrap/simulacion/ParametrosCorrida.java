@@ -11,17 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Todo lo que determina el resultado de una corrida (pantalla V-1 del
+ * Todo lo que determina el resultado de una corrida (pantalla de parametros del
  * prototipo): escenario, algoritmo, semilla, fecha/hora de inicio, umbrales
  * del semaforo y parametros de operacion. Misma semilla + mismos archivos =
- * misma corrida (B21, D23, D24).
+ * misma corrida.
  *
  * - SIMULACION_5D: 5 dias simulados, ejecucion acelerada para durar entre 30
- *   y 60 minutos reales (B22, C13). Por defecto 45 minutos.
+ *   y 60 minutos reales. Por defecto 45 minutos.
  * - TIEMPO_REAL: reloj 1:1 desde la fecha/hora de inicio (por defecto, ahora
- *   en Lima), sin limite superior (D12).
+ *   en Lima), sin limite superior.
  * - COLAPSO_LOGISTICO: reloj acelerado sin limite superior; se detiene solo al
- *   detectar el colapso logistico (C14, D14, D21).
+ *   detectar el colapso logistico.
  */
 public class ParametrosCorrida {
 
@@ -55,7 +55,7 @@ public class ParametrosCorrida {
         if (umbrales == null) umbrales = new UmbralesSemaforo();
         umbrales.normalizar();
         diasSimulacion = Math.max(1, Math.min(30, diasSimulacion));
-        // B22: la simulacion del periodo debe durar entre 30 y 60 minutos reales
+        // La simulacion del periodo debe durar entre 30 y 60 minutos reales
         duracionObjetivoMin = Math.max(30.0, Math.min(60.0, duracionObjetivoMin));
         factorAceleracionColapso = Math.max(1.0, Math.min(20000.0, factorAceleracionColapso));
         ventanaPlanificacionMin = Math.max(5.0, Math.min(240.0, ventanaPlanificacionMin));

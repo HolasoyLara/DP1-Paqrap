@@ -3,7 +3,7 @@ package pe.pucp.paqrap.flota;
 import pe.pucp.paqrap.comun.ParametrosOperacion;
 
 /**
- * Especializacion de Vehiculo (diagrama, Modulo D): capacidad 4 paquetes,
+ * Especializacion de Vehiculo: capacidad 4 paquetes,
  * S/ 3.00 por km. Velocidad por defecto 12 km/h (enunciado), configurable en
  * los parametros de la corrida (ver ParametrosOperacion).
  */

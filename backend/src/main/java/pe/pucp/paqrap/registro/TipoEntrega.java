@@ -3,11 +3,9 @@ package pe.pucp.paqrap.registro;
 import pe.pucp.paqrap.comun.ParametrosOperacion;
 
 /**
- * Modalidad de entrega comprometida (diagrama de clases, Modulo A: «enumeration» TipoEntrega).
- * Los nombres de las constantes son exactamente los del diagrama. El plazo por
- * defecto es el del enunciado; el plazo efectivo de una corrida se toma de
- * ParametrosOperacion (D10) y, para los pedidos del archivo de ventas, del
- * propio registro (campo plazo en horas).
+ * Modalidad de entrega comprometida. El plazo por defecto es el del enunciado; el de una
+ * corrida sale de ParametrosOperacion y, para los pedidos del archivo de ventas, del propio
+ * registro.
  */
 public enum TipoEntrega {
     REGULAR_36H(36, "Regular"),
@@ -26,7 +24,7 @@ public enum TipoEntrega {
 
     public String getEtiqueta() { return etiqueta; }
 
-    /** Plazo de este tipo en la corrida (D10: configurable por parametro). */
+    /** Plazo de este tipo en la corrida. */
     public int plazoEn(ParametrosOperacion parametros) {
         switch (this) {
             case PRIORIZADA_4H: return parametros.getPlazoPriorizada4H();

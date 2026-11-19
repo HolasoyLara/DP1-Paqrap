@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Averia tipo 2 de una unidad que lleva un pedido priorizado (4 h) que ya no
  * alcanza a reponerse desde el almacen: otra unidad en camino, que lleva carga
- * para un cliente con mas holgura, entrega primero al pedido critico (B10, B11).
+ * para un cliente con mas holgura, entrega primero al pedido critico.
  */
 class ReasignacionCargaTest {
 

@@ -29,7 +29,7 @@ interface Props {
 
 const COLORES: SemaforoOcupacion[] = ['vacio', 'verde', 'ambar', 'rojo'];
 
-/** Casillas de los 4 colores de ocupacion (F15-F16); el mismo estado filtra la lista y el mapa. */
+/** Casillas de los 4 colores de ocupacion; el mismo estado filtra la lista y el mapa. */
 export function FiltroSemaforo({ valor, onCambio, titulo }: {
   valor: Record<SemaforoOcupacion, boolean>; onCambio: (v: Record<SemaforoOcupacion, boolean>) => void; titulo: string;
 }) {
@@ -54,7 +54,7 @@ const ETIQUETA_ORDEN: Record<ClaveOrden, string> = {
   kmFalta: 'Distancia por recorrer (km)', kmHecho: 'Distancia recorrida (km)',
 };
 
-/** E06-E09: busqueda de unidades por tiempo (min) o distancia (km) al destino o desde el origen. */
+/** Busqueda de unidades por tiempo (min) o distancia (km) al destino o desde el origen. */
 type ModoBusqueda = 'llega' | 'salio' | 'kmDestino' | 'kmOrigen';
 const MODOS_BUSQUEDA: [ModoBusqueda, string, string][] = [
   ['llega', 'Llega a destino en ≤', 'min'],
@@ -112,7 +112,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
         return { v, o, llegaEn, salioHace, kmDestino, kmFalta, kmHecho };
       })
       .filter((f) => {
-        // E11: filtro permanente por rango de km al proximo destino; las unidades sin ruta no tienen distancia
+        // Filtro permanente por rango de km al proximo destino; las unidades sin ruta no tienen distancia
         const rango = RANGOS_KM.find((r) => r[0] === filtros.rangoKm);
         return !rango || (f.kmDestino != null && f.kmDestino >= rango[1] && f.kmDestino < rango[2]);
       })
@@ -143,7 +143,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
     });
   }, [estado.vehiculos, filtros, verde, ambar, ahora, busqueda, orden]);
 
-  // F08: al seleccionar la unidad en el mapa, su fila se resalta y se desplaza a la vista
+  // Al seleccionar la unidad en el mapa, su fila se resalta y se desplaza a la vista
   useEffect(() => {
     filaSel.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }, [idSel]);
@@ -158,7 +158,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
   return (
     <>
       <FiltroSemaforo titulo="Ocupación" valor={filtros.semaforoUT} onCambio={(v) => setFiltros({ ...filtros, semaforoUT: v })} />
-      {/* E10-E11 (y F18): tipo y origen, compartidos con el mapa */}
+      {/* Tipo y origen, compartidos con el mapa */}
       <div className="panel-fila">
         <span className="hint">Tipo:</span>
         {(['AUTO', 'MOTO', 'BICICLETA'] as const).map((t) => (
@@ -172,7 +172,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
           {origenes.map((n) => <option key={n} value={n}>{n}</option>)}
         </select>
       </div>
-      {/* E11: filtro permanente por distancia al proximo destino; se combina con la busqueda y el orden */}
+      {/* Filtro permanente por distancia al proximo destino; se combina con la busqueda y el orden */}
       <div className="panel-fila">
         <span className="hint">Distancia al destino:</span>
         <select value={filtros.rangoKm} onChange={(e) => setFiltros({ ...filtros, rangoKm: e.target.value as RangoKm })}>
@@ -181,7 +181,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
         </select>
         {filtros.rangoKm && <span className="chip-filtro">Filtro activo</span>}
       </div>
-      {/* E06-E09: por tiempo o distancia al destino / desde el origen */}
+      {/* Por tiempo o distancia al destino / desde el origen */}
       <div className="busqueda-tiempo">
         <select value={busqueda.modo} onChange={(e) => setBusqueda({ ...busqueda, modo: e.target.value as ModoBusqueda })}>
           {MODOS_BUSQUEDA.map(([id, texto]) => <option key={id} value={id}>{texto}</option>)}
@@ -190,7 +190,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
         <span className="hint">{unidadBusqueda}</span>
         {busqueda.n && <button className="btn btn-sm btn-ghost" onClick={() => setBusqueda({ ...busqueda, n: '' })}>Limpiar</button>}
       </div>
-      {/* E13-E17: orden ascendente o descendente (tambien con un clic en los encabezados) */}
+      {/* Orden ascendente o descendente (tambien con un clic en los encabezados) */}
       <div className="panel-fila" style={{ marginTop: 6 }}>
         <span className="hint">Ordenar por:</span>
         <select value={orden.clave} onChange={(e) => setOrden({ clave: e.target.value as ClaveOrden, asc: orden.asc })}>
@@ -270,7 +270,7 @@ function ListaTransporte({ estado, minutoAhora, seleccion, onAbrir, enfocar, fil
   );
 }
 
-/** Lista de almacenes (E18-E22, F05-F06). */
+/** Lista de almacenes. */
 function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filtros, setFiltros }: Props) {
   const [horas, setHoras] = useState(4);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
@@ -287,7 +287,7 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
   const filas = estado.almacenes.filter((a) => almacenPasaFiltro(a, filtros, verde, ambar));
   return (
     <>
-      {/* F17: filtro por almacen (central o intermedios), compartido con el mapa */}
+      {/* Filtro por almacen (central o intermedios), compartido con el mapa */}
       <div className="filtro-semaforo">
         <span className="hint">Almacenes:</span>
         {estado.almacenes.map((a) => (
@@ -325,7 +325,7 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
               const o = ocupacionAlmacen(a, verde, ambar);
               const porSalir = a.porSalir.filter((p) => p.minuto >= ahora && p.minuto <= ahora + horas * 60);
               const entregados = a.entregados.filter((p) => p.minuto >= ahora - horas * 60 && p.minuto <= ahora);
-              // E20: pedidos (y paquetes) a bordo de unidades que ya salieron de este almacen en su ruta actual
+              // Pedidos (y paquetes) a bordo de unidades que ya salieron de este almacen en su ruta actual
               const enTransito = estado.vehiculos
                 .filter((v) => v.origen === a.nombre && v.salidaMin != null && v.salidaMin <= ahora && v.pedidosCarga.length > 0)
                 .flatMap((v) => v.pedidosCarga.map((p) => ({ ...p, vehiculo: v.id })));
@@ -386,10 +386,10 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
   );
 }
 
-/** Lista de envios (E31, F09): una fila por pedido activo que se expande en una fila por parte. */
+/** Lista de envios: una fila por pedido activo que se expande en una fila por parte. */
 function ListaEnvios({ estado, minutoAhora, seleccion, onAbrir, enfocar }: Props) {
   const [texto, setTexto] = useState('');
-  // E32-E33: todos los activos, los que se entregan en las siguientes X horas o los entregados en las ultimas X horas
+  // Todos los activos, los que se entregan en las siguientes X horas o los entregados en las ultimas X horas
   const [vista, setVista] = useState<'activos' | 'proximos' | 'entregados'>('activos');
   const [horas, setHoras] = useState(4);
   const [abiertos, setAbiertos] = useState<Set<string>>(new Set());
@@ -433,7 +433,7 @@ function ListaEnvios({ estado, minutoAhora, seleccion, onAbrir, enfocar }: Props
         <option value="proximos">A entregar en las próximas…</option>
         <option value="entregados">Entregados en las últimas…</option>
       </select>
-      {/* E32-E33: X libre (horas enteras de 1 a 24; el backend guarda las entregas de las ultimas 24 h simuladas) */}
+      {/* X libre (horas enteras de 1 a 24; el backend guarda las entregas de las ultimas 24 h simuladas) */}
       {vista !== 'activos' && (
         <label className="campo-horas" title="X horas (1 a 24)">
           <input type="number" min={1} max={24} step={1} value={horas}
@@ -472,7 +472,7 @@ function ListaEnvios({ estado, minutoAhora, seleccion, onAbrir, enfocar }: Props
     );
   }
 
-  /** F09: enfoca la unidad que lleva el pedido o, si aun no sale, su destino. */
+  /** Enfoca la unidad que lleva el pedido o, si aun no sale, su destino. */
   const enfocarPedido = (id: string, x: number, y: number, vehiculo: string | null) => {
     const v = vehiculo ? estado.vehiculos.find((u) => u.id === vehiculo) : null;
     if (v) {
@@ -548,8 +548,8 @@ function ListaEnvios({ estado, minutoAhora, seleccion, onAbrir, enfocar }: Props
 }
 
 /**
- * Panel izquierdo plegable de Panorama (E01): listas de Transporte, Almacenes y Envios, vinculadas con el mapa en
- * ambos sentidos (F05-F09) y con los filtros de semaforo compartidos (F15-F16).
+ * Panel izquierdo plegable de Panorama: listas de Transporte, Almacenes y Envios, vinculadas con el mapa en
+ * ambos sentidos y con los filtros de semaforo compartidos.
  */
 export default function PanelListas(props: Props) {
   const { pestana, setPestana, onCerrar } = props;

@@ -3,8 +3,8 @@ package pe.pucp.paqrap.flota;
 import pe.pucp.paqrap.comun.Coordenada;
 
 /**
- * Almacen intermedio (diagrama, Modulo D): capacidad maxima de 1,000 unidades
- * (configurable) y recarga instantanea cada 24 horas a las 23:59:59 (B15, B16, D9).
+ * Almacen intermedio: capacidad maxima de 1,000 unidades
+ * (configurable) y recarga instantanea cada 24 horas a las 23:59:59.
  */
 public class AlmacenIntermedio extends Almacen {
     private final int capacidadMaxima;
@@ -29,13 +29,12 @@ public class AlmacenIntermedio extends Almacen {
     @Override
     public void recibir(int cantidad) { inventarioActual = Math.min(capacidadMaxima, inventarioActual + cantidad); }
 
-    /** +recargar() (diagrama): recarga instantanea a capacidad maxima (cada 24h de simulacion). */
+    /** Recarga instantanea a capacidad maxima (cada 24h de simulacion). */
     public void recargar() {
         inventarioActual = capacidadMaxima;
         unidadesDespachadasHoy = 0;
     }
 
-    /** +estaLleno(): boolean (diagrama). */
     public boolean estaLleno() { return inventarioActual >= capacidadMaxima; }
 
     /** % de stock disponible respecto a su capacidad (semaforizacion del almacen). */

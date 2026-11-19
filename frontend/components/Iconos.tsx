@@ -1,4 +1,4 @@
-// Iconos tematicos del mapa (prototipo v04): insignia de color (semaforo) con un glifo
+// Iconos tematicos del mapa: insignia de color (semaforo) con un glifo
 // blanco que representa la figura real: auto, moto o bicicleta, paquete y edificio.
 // Se dibujan centrados en (0, 0) en "pixeles de icono" y el mapa los escala para que
 // conserven su tamano en pantalla con cualquier zoom. El glifo admite otro color para

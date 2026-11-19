@@ -3,11 +3,9 @@ package pe.pucp.paqrap.planificador;
 import java.util.List;
 
 /**
- * Replanifica las rutas que atraviesan una calle bloqueada (diagrama, Modulo B;
- * B9): -bloqueoOrigen. Se registra cuando un bloqueo del archivo empieza con
- * unidades en camino que iban a pasar por el, o cuando el usuario cierra un
- * tramo desde el mapa: la unidad recalcula su recorrido desde donde esta,
- * esquivando el bloqueo.
+ * Replanificacion por una calle bloqueada: se registra cuando un bloqueo empieza con
+ * unidades en camino que iban a pasar por el, o cuando el usuario cierra un tramo desde el
+ * mapa. La unidad recalcula su recorrido desde donde esta, esquivando el bloqueo.
  */
 public class ReplanificacionPorBloqueo extends EventoReplanificacion {
     private final String bloqueoOrigen;

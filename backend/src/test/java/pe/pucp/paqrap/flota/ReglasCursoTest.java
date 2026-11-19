@@ -29,7 +29,7 @@ class ReglasCursoTest {
         return ConversorTiempo.aHoras(LocalDateTime.of(2026, 9, dia, h, 0));
     }
 
-    // ---------------- P3: averias ----------------
+    // ---------------- Averias ----------------
 
     @Test
     void averiaTipo1DejaLaUnidadInmovilizadaDosHoras() {
@@ -56,7 +56,7 @@ class ReglasCursoTest {
         assertEquals(4.0, TipoAveria.TIPO_3.calcularInmovilizacion(t, disponible), EPS);
     }
 
-    // ---------------- P12 / P13: jornada y alimentacion ----------------
+    // ---------------- Jornada y alimentacion ----------------
 
     @Test
     void elConductorComeUnaHoraDespuesDelCambioDeTurno() {
@@ -86,7 +86,7 @@ class ReglasCursoTest {
         assertFalse(j.pausasOcurridas(1, inicio, hora(10, 20)).contains(hora(10, 0)));
     }
 
-    // ---------------- P19: mantenimiento preventivo ----------------
+    // ---------------- Mantenimiento preventivo ----------------
 
     @Test
     void elMantenimientoDejaLaUnidadFueraTodoElDiaYSeRepiteCadaDosMeses() throws IOException {
@@ -110,7 +110,7 @@ class ReglasCursoTest {
         assertEquals(1, lectura.getRegistros().size(), "y solo se conserva la linea valida");
     }
 
-    // ---------------- P7 / P8: formato de bloqueos y ventas ----------------
+    // ---------------- Formato de bloqueos y ventas ----------------
 
     @Test
     void ventasSeLeenConElFormatoDelCurso() throws IOException {

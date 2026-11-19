@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-/** Historial de corridas (D24) con su cierre, sus rutas (B25) y sus incidencias (D19). */
+/** Historial de corridas con su cierre, sus rutas y sus incidencias. */
 @RestController
 @RequestMapping("/api/corridas")
 public class CorridasController {

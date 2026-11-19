@@ -16,10 +16,10 @@ interface Props {
   ambar: number;
   onCerrar: () => void;
   onAbrir: (s: Seleccion) => void;
-  /** Va a Panorama y centra el mapa (F01/F03, F09). */
+  /** Va a Panorama y centra el mapa. */
   onVerEnMapa: (x: number, y: number) => void;
   onAviso: (texto: string, tipo?: 'ok' | 'error') => void;
-  /** F02/F04: dibuja en el mapa una ruta ya recorrida. */
+  /** Dibuja en el mapa una ruta ya recorrida. */
   onVerRutaAnterior: (r: RutaAnterior) => void;
   /** Clave «unidad:ruta» de la ruta anterior dibujada en el mapa (o null). */
   rutaAnteriorActiva: string | null;
@@ -41,7 +41,7 @@ const ICONO_EVENTO: Record<string, string> = {
 /** Hora "hh:mm" de una fecha del backend ("dd/mm/aaaa hh:mm" u otra que termine en la hora). */
 const soloHora = (f: string) => (f && f.length >= 5 ? f.slice(-5) : f);
 
-/** B11: la ruta como lista de tramos origen -> destino, con hora de salida y de llegada. */
+/** La ruta como lista de tramos origen -> destino, con hora de salida y de llegada. */
 function Tramos({ ruta, onAbrir }: { ruta: NonNullable<DetalleVehiculo['ruta']>; onAbrir: (s: Seleccion) => void }) {
   const tramos: { origen: string; destino: string; sale: string; llega: string; pedido: string | null; hecho: boolean; actual: boolean }[] = [];
   let origen = `Almacén ${ruta.almacenSalida}`;
@@ -70,7 +70,7 @@ function Tramos({ ruta, onAbrir }: { ruta: NonNullable<DetalleVehiculo['ruta']>;
   );
 }
 
-/** F02/F04: rutas ya recorridas, con sus escalas, y el boton para dibujarlas en el mapa a demanda. */
+/** Rutas ya recorridas, con sus escalas, y el boton para dibujarlas en el mapa a demanda. */
 function RutasAnteriores({ rutas, activa, onVer, onAbrir, conUnidad }: {
   rutas: RutaAnterior[]; activa: string | null; onVer: (r: RutaAnterior) => void; onAbrir: (s: Seleccion) => void; conUnidad: boolean;
 }) {

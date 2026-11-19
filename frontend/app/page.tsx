@@ -54,9 +54,9 @@ function conSegundos(f: string | null): string | null {
 }
 
 /**
- * PaqRap · Visualizador. Una sola pagina con las pantallas del prototipo v04
- * (V-1 Parametros, V-2 Panorama, V-3 Cierre) mas Pedidos (Modulo A). Todos los dispositivos ven la misma corrida; la zona,
- * el zoom, los filtros y la seleccion son locales a cada uno (C5, C6).
+ * PaqRap · Visualizador. Una sola pagina con las pantallas
+ * mas Pedidos (Modulo A). Todos los dispositivos ven la misma corrida; la zona,
+ * el zoom, los filtros y la seleccion son locales a cada uno.
  */
 export default function Pagina() {
   const { estado, error, minutoAhora, refrescar } = useEstadoSimulacion(1000);
@@ -70,13 +70,13 @@ export default function Pagina() {
   const [seleccion, setSeleccion] = useState<Seleccion | null>(null);
   const [cierre, setCierre] = useState<CierreCorrida | null>(null);
   const [avisos, setAvisos] = useState<AvisoLocal[]>([]);
-  // F01/F03: «Ver ruta en el mapa» desde el detalle (aunque se venga de otra pestaña)
+  // «Ver ruta en el mapa» desde el detalle (aunque se venga de otra pestaña)
   const [foco, setFoco] = useState<{ x: number; y: number; n: number } | null>(null);
   const verEnMapa = useCallback((x: number, y: number) => {
     setPestana('panorama');
     setFoco((f) => ({ x, y, n: (f?.n ?? 0) + 1 }));
   }, []);
-  // F02/F04: ruta ya recorrida dibujada a demanda en el mapa
+  // Ruta ya recorrida dibujada a demanda en el mapa
   const [rutaAnterior, setRutaAnterior] = useState<RutaAnterior | null>(null);
   const verRutaAnterior = useCallback((r: RutaAnterior) => {
     setRutaAnterior(r);

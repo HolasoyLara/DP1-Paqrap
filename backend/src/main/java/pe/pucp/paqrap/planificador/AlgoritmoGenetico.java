@@ -16,23 +16,12 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * AlgoritmoGenetico (diagrama, Modulo B): implementa AlgoritmoMetaheuristico
- * mediante el patron Strategy. Atributos del diagrama: tamanoPoblacion,
- * tasaCruce, tasaMutacion, numeroGeneraciones. +resolver(modelo): Plan.
+ * Algoritmo Genetico (GA) en dos etapas: asignacion inicial de pedidos a vehiculos por
+ * insercion mas barata y busqueda genetica sobre el orden de visita (cruce OX, mutacion
+ * swap, seleccion por torneo y elitismo).
  *
- * Es el "Algoritmo 1" del equipo (version del 24-sep-2026): internamente
- * resuelve, en dos etapas, las dos responsabilidades asignadas para este
- * algoritmo - asignacion de pedidos a vehiculos (construccion inicial,
- * cheapest insertion) y metaheuristica de rutas (busqueda genetica sobre el
- * orden de visita: cruce OX, mutacion swap, seleccion por torneo y elitismo).
- *
- * Cambios respecto a la version por linea de comandos, para integrarlo al
- * sistema completo:
- * - cada unidad sale del almacen donde esta estacionada (central o
- *   intermedio), y la asignacion respeta el stock que cada almacen todavia
- *   puede despachar en la ventana (B16);
- * - el tiempo de servicio viene del modelo (parametro de la corrida).
- * La logica de la asignacion, el fitness y los operadores geneticos es la misma.
+ * Cada unidad sale del almacen donde esta estacionada (central o intermedio) y la
+ * asignacion respeta el stock que cada almacen todavia puede despachar en la ventana.
  */
 public class AlgoritmoGenetico implements AlgoritmoMetaheuristico {
 
@@ -41,13 +30,12 @@ public class AlgoritmoGenetico implements AlgoritmoMetaheuristico {
     private static final double PENALIZACION_POR_INCUMPLIMIENTO = 10000.0;
     private static final double PENALIZACION_POR_MANTENIMIENTO = 100000.0; // ruta que vuelve despues de iniciar el mantenimiento
 
-    // Atributos declarados en el diagrama de clases:
     private final int tamanoPoblacion;
     private final double tasaCruce;
     private final double tasaMutacion;
     private final int numeroGeneraciones;
 
-    // Parametros adicionales de implementacion (el diagrama no fija estos detalles):
+    // Parametros de implementacion
     private final int tamanoTorneo;
     private final Random random;
 
@@ -64,7 +52,6 @@ public class AlgoritmoGenetico implements AlgoritmoMetaheuristico {
     @Override
     public String getNombre() { return "GA"; }
 
-    /** +resolver(modelo): Plan (diagrama). */
     @Override
     public Plan resolver(ModeloRuteo modelo) {
         Asignacion inicial = construirAsignacionInicial(modelo);
@@ -118,7 +105,7 @@ public class AlgoritmoGenetico implements AlgoritmoMetaheuristico {
             for (Vehiculo v : flota) {
                 if (!v.estaOperativa(horaPlanificacion)) continue;
                 if (capacidadRestante.get(v) < pedido.getCantidadUnidades()) continue;
-                // B16: la unidad solo carga lo que todavia tiene su almacen
+                // La unidad solo carga lo que todavia tiene su almacen
                 if (stockRestante.getOrDefault(v.getAlmacenBase().getIdAlmacen(), 0) < pedido.getCantidadUnidades()) continue;
                 double tramo = redVial.calcularDistancia(posicionActual.get(v), pedido.getUbicacion(), horaActual.get(v));
                 if (Double.isInfinite(tramo)) continue;
@@ -161,7 +148,7 @@ public class AlgoritmoGenetico implements AlgoritmoMetaheuristico {
     }
 
     /**
-     * Mantenimiento preventivo (P19): si la unidad entrega este pedido, tiene
+     * Mantenimiento preventivo: si la unidad entrega este pedido, tiene
      * que alcanzar a volver al almacen antes de que empiece su mantenimiento.
      */
     private boolean vuelveAntesDelMantenimiento(Vehiculo v, RedVial redVial, Coordenada destino,

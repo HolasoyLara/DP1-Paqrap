@@ -3,9 +3,9 @@ package pe.pucp.paqrap.flota;
 import pe.pucp.paqrap.comun.Coordenada;
 
 /**
- * Almacen central (diagrama, Modulo D): abastecimiento permanente, se considera
+ * Almacen central: abastecimiento permanente, se considera
  * de inventario infinito (enunciado, D8). Todas las unidades salen de aqui al
- * inicio de cualquier escenario (P10).
+ * inicio de cualquier escenario.
  */
 public class AlmacenCentral extends Almacen {
 

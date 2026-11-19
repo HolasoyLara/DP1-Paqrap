@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Archivos de entrada que usa una corrida (pantalla V-1, "Archivos de
+ * Archivos de entrada que usa una corrida (pantalla de parametros, "Archivos de
  * entrada"): ventas y bloqueos por mes, plan de mantenimiento y, si el usuario
  * lo subio, el archivo de averias programadas. Se fija al iniciar la corrida:
  * subir otro archivo despues solo afecta a la corrida siguiente.

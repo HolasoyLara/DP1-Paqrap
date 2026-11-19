@@ -3,8 +3,7 @@ package pe.pucp.paqrap.planificador;
 import pe.pucp.paqrap.registro.Pedido;
 
 /**
- * Visita a un cliente dentro de una ruta (diagrama, Modulo B):
- * -secuencia: int, -pedidoAsociado: Pedido, -horaEstimadaLlegada, -tiempoServicio.
+ * Visita a un cliente dentro de una ruta.
  */
 public class ParadaRuta {
     private final int secuencia;

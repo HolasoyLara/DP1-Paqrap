@@ -1,10 +1,8 @@
 package pe.pucp.paqrap.comun;
 
 /**
- * Ubicacion geografica (x, y) sobre la reticula vial de la ciudad (70 x 50 km).
- * Corresponde a la clase "Coordenada" del Modulo A en el diagrama de clases
- * (13.ana.diag.clases.v01): -x: double, -y: double. El origen (0, 0) es la
- * esquina inferior izquierda de la ciudad.
+ * Ubicacion (x, y) sobre la reticula vial de la ciudad (70 x 50 km). El origen (0, 0)
+ * es la esquina inferior izquierda.
  */
 public record Coordenada(double x, double y) {
 

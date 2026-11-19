@@ -10,16 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Encapsula pedidos, flota, almacenes y restricciones como entrada del
- * algoritmo (diagrama, Modulo B): -pedidos, -flotaDisponible, -almacenes,
- * -redVial, -restriccionesTurno, +construirRestricciones().
- *
- * Se agregan dos datos que el diagrama no fija y el ruteo necesita:
- * - horaPlanificacion: instante de la ventana de planificacion (unidades
- *   operativas, bloqueos vigentes y hora de salida de las rutas);
- * - stockDisponible: unidades que todavia puede despachar cada almacen en esta
- *   ventana (B16). Una unidad estacionada en un almacen intermedio solo puede
- *   cargar lo que ese almacen tenga; el central no tiene limite.
+ * Entrada de los algoritmos: pedidos, flota, almacenes, red vial y restricciones, mas
+ * - horaPlanificacion: instante de la ventana (unidades operativas, bloqueos vigentes y
+ *   hora de salida de las rutas);
+ * - stockDisponible: unidades que todavia puede despachar cada almacen en esta ventana.
+ *   Una unidad en un almacen intermedio solo carga lo que ese almacen tenga; el central no
+ *   tiene limite.
  */
 public class ModeloRuteo {
     private final List<Pedido> pedidos;
@@ -48,9 +44,9 @@ public class ModeloRuteo {
     }
 
     /**
-     * +construirRestricciones() (diagrama). Deja en la flota solo las unidades
+     * Deja en la flota solo las unidades
      * disponibles y operativas a la hora de planificacion; el mantenimiento
-     * (P19) y la hora de alimentacion se aplican directamente en el algoritmo
+     * y la hora de alimentacion se aplican directamente en el algoritmo
      * al estimar tiempos de viaje.
      */
     public void construirRestricciones() {

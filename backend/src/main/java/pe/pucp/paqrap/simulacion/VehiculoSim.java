@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Estado de una unidad durante la simulacion: la ruta que ejecuta, la averia
  * que la tiene detenida y sus acumulados (rutas, entregas, km, costo) para los
- * reportes de utilizacion de flota (D17, D18).
+ * reportes de utilizacion de flota.
  */
 public final class VehiculoSim {
 
@@ -106,7 +106,7 @@ public final class VehiculoSim {
     public Vehiculo getVehiculo() { return vehiculo; }
     public String getId() { return vehiculo.getIdVehiculo(); }
     public RutaEnCurso getRuta() { return ruta; }
-    /** Al reemplazar o terminar la ruta vigente, la anterior pasa al historial (F02/F04: rutas anteriores a demanda). */
+    /** Al reemplazar o terminar la ruta vigente, la anterior pasa al historial. */
     public void setRuta(RutaEnCurso ruta) {
         if (this.ruta != null && this.ruta != ruta) {
             rutasCerradas.add(this.ruta);

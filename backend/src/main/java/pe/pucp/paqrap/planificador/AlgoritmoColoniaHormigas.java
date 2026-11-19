@@ -14,33 +14,23 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * AlgoritmoColoniaHormigas (diagrama, Modulo B): segunda implementacion de
- * AlgoritmoMetaheuristico (patron Strategy), "Optimizacion por Colonia de
- * Hormigas (ACO)" del prototipo v04 y del ISA. Atributos: numeroHormigas,
- * numeroIteraciones, alfa, beta, tasaEvaporacion. +resolver(modelo): Plan.
+ * Optimizacion por Colonia de Hormigas (ACO), variante Ant Colony System, para ruteo con
+ * flota heterogenea, capacidad y plazos duros.
  *
- * Variante Ant Colony System para ruteo con flota heterogenea, capacidad y
- * plazos (VRP con ventanas de tiempo duras):
- * - Cada hormiga construye una solucion completa: toma las unidades en orden de
- *   costo por paquete (con ruido aleatorio) y, para cada una, agrega pedidos
- *   uno a uno mientras quepan, lleguen dentro del plazo y la unidad alcance a
- *   volver antes de su mantenimiento. El siguiente pedido se elige con la
- *   regla pseudoaleatoria proporcional de ACS: con probabilidad q0 el de mayor
- *   tau^alfa * eta^beta, si no por ruleta. La heuristica eta combina cercania
- *   (1 / (1 + km)) y urgencia (holgura restante del plazo).
- * - Actualizacion local de feromona en cada paso y global (solo la mejor
- *   solucion) al final de cada iteracion; busqueda local 2-opt/intercambio
- *   sobre la mejor hormiga de cada iteracion.
- * - Funcion objetivo: costo por km (S/ 8, 6, 3) mas penalizaciones por pedido
- *   fuera de plazo, por ruta que no vuelve antes del mantenimiento y por pedido
- *   que queda sin atender (mas alta si ya no puede esperar a la siguiente ventana).
+ * - Cada hormiga construye una solucion completa: toma las unidades en orden de costo por
+ *   paquete (con ruido) y les agrega pedidos mientras quepan, lleguen en plazo y la unidad
+ *   vuelva antes de su mantenimiento. El siguiente pedido se elige con la regla
+ *   pseudoaleatoria de ACS: con probabilidad q0 el de mayor tau^alfa * eta^beta, si no por
+ *   ruleta. La heuristica eta combina cercania (1 / (1 + km)) y urgencia (holgura restante).
+ * - Feromona: actualizacion local en cada paso y global (solo la mejor solucion) al final de
+ *   cada iteracion; busqueda local 2-opt/intercambio sobre la mejor hormiga.
+ * - Funcion objetivo: costo por km mas penalizaciones por pedido fuera de plazo, por ruta
+ *   que no vuelve antes del mantenimiento y por pedido sin atender.
  *
- * Usa las mismas reglas que el Genetico (alimentacion del conductor, bloqueos
- * segun la hora de salida de cada tramo, stock de cada almacen, mantenimiento),
- * de modo que la comparacion entre ambos sea sobre el mismo problema. Igual que
- * el ACO del equipo (correcciones del 24-sep), la capacidad es restriccion dura
- * y el motor recibe solo los pedidos que todavia pueden llegar a tiempo,
- * ordenados por plazo, hasta el doble de la capacidad libre.
+ * Usa las mismas reglas que el Genetico (alimentacion, bloqueos por hora de salida, stock
+ * por almacen, mantenimiento), asi ambos resuelven el mismo problema. La capacidad es una
+ * restriccion dura y solo recibe pedidos que todavia pueden llegar a tiempo, ordenados por
+ * plazo, hasta el doble de la capacidad libre.
  */
 public class AlgoritmoColoniaHormigas implements AlgoritmoMetaheuristico {
 
@@ -98,7 +88,6 @@ public class AlgoritmoColoniaHormigas implements AlgoritmoMetaheuristico {
         }
     }
 
-    /** +resolver(modelo): Plan (diagrama). */
     @Override
     public Plan resolver(ModeloRuteo modelo) {
         this.modelo = modelo;

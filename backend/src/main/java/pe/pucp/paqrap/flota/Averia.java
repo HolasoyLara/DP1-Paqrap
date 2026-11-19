@@ -3,9 +3,8 @@ package pe.pucp.paqrap.flota;
 import pe.pucp.paqrap.comun.Coordenada;
 
 /**
- * Falla de una unidad de transporte (diagrama, Modulo D):
- * -vehiculoAfectado: Vehiculo, -causa: String. Se agregan la hora, el tipo y
- * el tiempo de inoperatividad que pide la Lista de Exigencias (D7).
+ * Falla de una unidad de transporte: unidad afectada, causa, hora, tipo y tiempo de
+ * inoperatividad.
  */
 public class Averia {
     private final String idAveria;

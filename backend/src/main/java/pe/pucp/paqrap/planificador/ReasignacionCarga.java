@@ -3,16 +3,11 @@ package pe.pucp.paqrap.planificador;
 import java.util.List;
 
 /**
- * Traslada productos en transito de un cliente a otro, priorizando el de menor
- * holgura (diagrama, Modulo B; B11): -pedidoOrigenTransito,
- * -pedidoDestinoCritico, -motivo, -fechaHora. +ejecutar(),
- * +dejarConstanciaAuditable().
- *
- * Como el producto P es unico, una unidad en camino puede entregar al cliente
- * mas critico (por ejemplo, uno que quedo sin unidad por una averia) los
- * paquetes que llevaba para un cliente con mas holgura; ese segundo pedido se
- * vuelve a planificar desde un almacen dentro de su propio plazo. El motor de
- * simulacion ejecuta el cambio y esta clase deja la constancia auditable.
+ * Traslado de carga en transito hacia el cliente mas critico. Como el producto es unico,
+ * una unidad en camino puede entregar a un cliente sin unidad (por ejemplo, por una averia)
+ * los paquetes que llevaba para otro con mas holgura; ese segundo pedido se vuelve a
+ * planificar desde un almacen dentro de su plazo. El motor ejecuta el cambio y esta clase
+ * deja la constancia.
  */
 public class ReasignacionCarga extends EventoReplanificacion {
     private final String pedidoOrigenTransito;
@@ -30,7 +25,6 @@ public class ReasignacionCarga extends EventoReplanificacion {
     @Override
     public String getCausa() { return "REASIGNACION"; }
 
-    /** +dejarConstanciaAuditable() (diagrama). */
     public String dejarConstanciaAuditable() {
         return String.format("Reasignacion de carga: %s -> %s (motivo: %s)", pedidoOrigenTransito, pedidoDestinoCritico, motivo);
     }

@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Cierre de una corrida (pantalla V-3 del prototipo) y reportes del Modulo D:
- * cumplimiento de plazos (D15), costo total (D16), kilometraje por tipo de
- * vehiculo (D17), utilizacion de la flota (D18), incidencias (D19), momento del
- * colapso (D21), detalle de la ejecucion (D24) y verificacion automatica de la
- * politica de entrega (D25).
+ * Cierre de una corrida y sus reportes:
+ * cumplimiento de plazos, costo total, kilometraje por tipo de
+ * vehiculo, utilizacion de la flota, incidencias, momento del
+ * colapso, detalle de la ejecucion y verificacion automatica de la
+ * politica de entrega.
  */
 public record CierreCorrida(
         String idCorrida,
@@ -36,7 +36,7 @@ public record CierreCorrida(
         UltimaPlanificacion ultimaPlanificacion) {
 
     /**
-     * Ultima planificacion estable al cierre (G08-G10): hora y causa de la ultima planificacion y, por unidad con
+     * Ultima planificacion estable al cierre: hora y causa de la ultima planificacion y, por unidad con
      * ruta vigente, almacen de salida, paradas pendientes y regreso.
      */
     public record UltimaPlanificacion(String fecha, String causa, List<RutaVigente> rutas) {

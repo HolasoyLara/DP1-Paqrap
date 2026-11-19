@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Cierre temporal de calles (diagrama, Modulo D): -areaAfectada (D6).
+ * Cierre temporal de calles: -areaAfectada.
  *
  * Un bloqueo programado viene del archivo mensual de bloqueos
  * (registro ##d##h##m-##d##h##m:x1,y1,x2,y2,...,xn,yn): un intervalo de
  * tiempo y una poligonal abierta de tramos horizontales o verticales. Todos
  * los nodos que recorre esa poligonal quedan bloqueados mientras el bloqueo
- * esta vigente (Preguntas y Respuestas, P7). Las horas son absolutas.
+ * esta vigente. Las horas son absolutas.
  */
 public class Bloqueo {
     private final String idBloqueo;
@@ -27,7 +27,7 @@ public class Bloqueo {
         this.vertices = List.copyOf(vertices);
     }
 
-    /** true si el bloqueo rige en la hora dada: [inicio, fin). */
+    /** True si el bloqueo rige en la hora dada: [inicio, fin). */
     public boolean estaVigente(double hora) {
         return hora >= horaInicio && hora < horaFin;
     }
