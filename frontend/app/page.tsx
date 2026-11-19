@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
 import { ahoraLima, aInputFecha } from '@/lib/formato';
-import type { CierreCorrida, Configuracion, ParametrosCorrida, ResumenArchivo } from '@/lib/tipos';
+import type { CierreCorrida, Configuracion, ParametrosCorrida, ResumenArchivo, RutaAnterior } from '@/lib/tipos';
 import { useEstadoSimulacion } from '@/lib/useEstadoSimulacion';
 import TopBar from '@/components/TopBar';
 import Sidebar, { type Modo } from '@/components/Sidebar';
@@ -76,6 +76,23 @@ export default function Pagina() {
     setPestana('panorama');
     setFoco((f) => ({ x, y, n: (f?.n ?? 0) + 1 }));
   }, []);
+  // F02/F04: ruta ya recorrida dibujada a demanda en el mapa
+  const [rutaAnterior, setRutaAnterior] = useState<RutaAnterior | null>(null);
+  const verRutaAnterior = useCallback((r: RutaAnterior) => {
+    setRutaAnterior(r);
+    const t = r.trayectoria;
+    if (t.length >= 3) {
+      // centra el mapa en el medio del recorrido
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      for (let i = 0; i < t.length; i += 3) {
+        minX = Math.min(minX, t[i]); maxX = Math.max(maxX, t[i]);
+        minY = Math.min(minY, t[i + 1]); maxY = Math.max(maxY, t[i + 1]);
+      }
+      verEnMapa((minX + maxX) / 2, (minY + maxY) / 2);
+    } else {
+      setPestana('panorama');
+    }
+  }, [verEnMapa]);
   const [modo, setModo] = useState<Modo>('simulacion');
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [infoMapa, setInfoMapa] = useState(false);
@@ -181,6 +198,7 @@ export default function Pagina() {
       const fecha = form.escenario === 'TIEMPO_REAL' && !form.fechaInicio ? ahoraLima() : form.fechaInicio;
       await api.iniciar({ ...form, fechaInicio: conSegundos(fecha) });
       setCierre(null);
+      setRutaAnterior(null);
       setSeleccion(null);
       setPestana('panorama');
       await refrescar();
@@ -359,6 +377,8 @@ export default function Pagina() {
             onAviso={aviso}
             refrescar={refrescar}
             foco={foco}
+            rutaAnterior={rutaAnterior}
+            onOcultarRutaAnterior={() => setRutaAnterior(null)}
           />
         )}
         {pestana === 'cierre' && <PantallaCierre estado={estado} cierreRecibido={cierre} />}
@@ -379,6 +399,8 @@ export default function Pagina() {
           onAbrir={setSeleccion}
           onVerEnMapa={verEnMapa}
           onAviso={aviso}
+          onVerRutaAnterior={verRutaAnterior}
+          rutaAnteriorActiva={rutaAnterior ? rutaAnterior.vehiculo + ':' + rutaAnterior.id : null}
         />
       )}
       <Toasts

@@ -69,12 +69,13 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
           {pildora('Almacenes', ocup.almacenes.pct, `${numero(ocup.almacenes.stock)} / ${numero(ocup.almacenes.cap)} en intermedios (central sin límite)`)}
         </div>
       )}
-      <div className="barra-tiempos" aria-live="polite">
+      {/* C12-C15: los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
+      {estado?.escenario !== 'TIEMPO_REAL' && <div className="barra-tiempos" aria-live="polite">
         <span><em>Simulado</em><b>{hay && estado ? fechaHoraCompleta(estado.inicioMs + minuto * 60000) : '—'}</b></span>
         <span><em>Transcurrido sim.</em><b>{hay ? transcurridoSimulado(minuto) : '—'}</b></span>
         <span><em>Actual</em><b suppressHydrationWarning>{montado ? ahoraLimaTexto() : '—'}</b></span>
         <span><em>Transcurrido real</em><b>{hay ? transcurridoReal(segundosReales) : '—'}</b></span>
-      </div>
+      </div>}
       <button className={'btn-flot' + (infoAbierta ? ' activo' : '')} onClick={onInfo} title="Ocupación global, escenario e información de la corrida">Información</button>
       <ControlRitmo estado={estado} ocupado={ocupado} onCambiar={onRitmo} compacto />
       <button className="btn btn-sm btn-start" disabled={!puedeIniciar || ocupado || enCurso} onClick={onIniciar}>Iniciar</button>

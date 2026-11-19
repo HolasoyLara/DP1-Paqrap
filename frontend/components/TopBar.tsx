@@ -129,12 +129,13 @@ export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoT
               sub={`${numero(almacenes.stock)} / ${numero(almacenes.cap)} · intermedios (central sin límite)`} />
           </div>
         )}
-        <div className="reloj-2x2" aria-live="polite">
+        {/* C12-C15: los 4 tiempos se muestran en 5 días y colapso, no en la operación día a día */}
+        {estado?.escenario !== 'TIEMPO_REAL' && <div className="reloj-2x2" aria-live="polite">
           <div className="reloj-celda"><span>Fecha y hora simulada</span><b>{simulada}</b></div>
           <div className="reloj-celda"><span>Transcurrido simulado</span><b>{hayCorrida ? transcurridoSimulado(minuto) : '—'}</b></div>
           <div className="reloj-celda"><span>Fecha y hora actual</span><b suppressHydrationWarning>{montado ? ahoraLimaTexto() : '—'}</b></div>
           <div className="reloj-celda"><span>Transcurrido real</span><b>{hayCorrida ? transcurridoReal(segundosReales) : '—'}</b></div>
-        </div>
+        </div>}
         <ControlRitmo estado={estado} ocupado={ocupado} onCambiar={onRitmo} />
         <button className="btn btn-start" disabled={!puedeIniciar || ocupado || enCurso} onClick={onIniciar}>Iniciar corrida</button>
         <button className="btn btn-stop" disabled={!enCurso || ocupado} onClick={onDetener}>Detener corrida</button>

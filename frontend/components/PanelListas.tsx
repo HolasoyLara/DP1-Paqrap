@@ -287,6 +287,23 @@ function ListaAlmacenes({ estado, minutoAhora, seleccion, onAbrir, enfocar, filt
   const filas = estado.almacenes.filter((a) => almacenPasaFiltro(a, filtros, verde, ambar));
   return (
     <>
+      {/* F17: filtro por almacen (central o intermedios), compartido con el mapa */}
+      <div className="filtro-semaforo">
+        <span className="hint">Almacenes:</span>
+        {estado.almacenes.map((a) => (
+          <label key={a.id} className="filtro-color" title={a.central ? 'Almacén central' : 'Almacén intermedio'}>
+            <input type="checkbox" checked={!filtros.almacenesOcultos.includes(a.id)}
+              onChange={(e) => setFiltros({
+                ...filtros,
+                almacenesOcultos: e.target.checked
+                  ? filtros.almacenesOcultos.filter((x) => x !== a.id)
+                  : [...filtros.almacenesOcultos, a.id],
+              })} />
+            {(() => { const n = a.nombre.replace(/^(Almacén|Intermedio)\s+/i, ''); return n.charAt(0).toUpperCase() + n.slice(1); })()}
+          </label>
+        ))}
+        {filtros.almacenesOcultos.length > 0 && <span className="chip-filtro">Filtro activo</span>}
+      </div>
       <FiltroSemaforo titulo="Ocupación" valor={filtros.semaforoAlmacen} onCambio={(v) => setFiltros({ ...filtros, semaforoAlmacen: v })} />
       <div className="busqueda-tiempo">
         <span className="hint">Ventana de tiempo:</span>
@@ -416,10 +433,16 @@ function ListaEnvios({ estado, minutoAhora, seleccion, onAbrir, enfocar }: Props
         <option value="proximos">A entregar en las próximas…</option>
         <option value="entregados">Entregados en las últimas…</option>
       </select>
+      {/* E32-E33: X libre (horas enteras de 1 a 24; el backend guarda las entregas de las ultimas 24 h simuladas) */}
       {vista !== 'activos' && (
-        <select value={horas} onChange={(e) => setHoras(Number(e.target.value))}>
-          {[1, 2, 4, 8, 12, 24].map((h) => <option key={h} value={h}>{h} h</option>)}
-        </select>
+        <label className="campo-horas" title="X horas (1 a 24)">
+          <input type="number" min={1} max={24} step={1} value={horas}
+            onChange={(e) => {
+              const n = Math.round(Number(e.target.value));
+              if (Number.isFinite(n)) setHoras(Math.max(1, Math.min(24, n)));
+            }} />
+          h
+        </label>
       )}
     </div>
   );

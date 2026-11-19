@@ -1721,8 +1721,65 @@ public class MotorSimulacion {
                     v.getVelocidadPromedioKmH(), v.getCostoPorKm(), horas, turno,
                     Double.isInfinite(proxMant) ? (v.estaEnMantenimiento(t) ? "Hoy (en mantenimiento)" : "Sin programar en los datos cargados") : fecha(proxMant),
                     averia, rutaDetalle, aBordo, proxima, eta, vs.getRutasRealizadas() + (r != null && !esContinuacion(r.getCausa()) && !r.getParadas().isEmpty() ? 1 : 0),
-                    vs.getParadasEntregadas(), redondear(km, 1), redondear(km * v.getCostoPorKm(), 2), evs);
+                    vs.getParadasEntregadas(), redondear(km, 1), redondear(km * v.getCostoPorKm(), 2), evs,
+                    rutasAnteriores(vs, null));
         });
+    }
+
+    /**
+     * F02/F04: rutas ya recorridas por la unidad, de la mas reciente a la mas antigua. Los tramos cerrados con el mismo
+     * id (una ruta cambiada en camino por bloqueo, averia o reasignacion) se unen en una sola ruta. Si se indica un
+     * pedido, solo las rutas que hicieron escala para ese pedido, y solo con esas escalas.
+     */
+    private List<DetalleVisual.RutaAnterior> rutasAnteriores(VehiculoSim vs, String pedido) {
+        Map<String, List<RutaEnCurso>> porId = new LinkedHashMap<>();
+        for (RutaEnCurso r : vs.getRutasCerradas()) porId.computeIfAbsent(r.getIdRuta(), k -> new ArrayList<>()).add(r);
+        List<DetalleVisual.RutaAnterior> salida = new ArrayList<>();
+        for (Map.Entry<String, List<RutaEnCurso>> e : porId.entrySet()) {
+            List<RutaEnCurso> tramos = e.getValue();
+            RutaEnCurso primero = tramos.get(0), ultimo = tramos.get(tramos.size() - 1);
+            List<Double> pts = new ArrayList<>();
+            List<DetalleVisual.ParadaDetalle> paradas = new ArrayList<>();
+            double km = 0;
+            int sec = 1;
+            for (RutaEnCurso r : tramos) {
+                Trayectoria tr = r.getTrayectoria();
+                double fin = Double.isNaN(r.getHoraCierre()) ? r.getHoraRegreso() : r.getHoraCierre();
+                for (int i = 0; i < tr.tamano() && tr.t(i) <= fin + 1e-9; i++) {
+                    pts.add(redondear(tr.x(i), 3));
+                    pts.add(redondear(tr.y(i), 3));
+                    pts.add(redondear(minutos(tr.t(i)), 2));
+                }
+                if (tr.tamano() > 0 && fin < tr.tiempoFin() - 1e-9) {
+                    double[] p = tr.posicionEn(fin);
+                    pts.add(redondear(p[0], 3));
+                    pts.add(redondear(p[1], 3));
+                    pts.add(redondear(minutos(fin), 2));
+                }
+                km += tr.kmHasta(fin);
+                for (ParadaEnCurso p : r.getParadas()) {
+                    if (!p.estaEntregada()) continue;
+                    Pedido parte = p.getParte();
+                    if (pedido != null && !pedido.equalsIgnoreCase(parte.getIdPedidoOrigen())) continue;
+                    paradas.add(new DetalleVisual.ParadaDetalle(sec++, parte.getIdPedidoOrigen(), parte.getCliente().getIdCliente(),
+                            parte.getUbicacion().x(), parte.getUbicacion().y(), parte.getCantidadUnidades(), fecha(p.getHoraLlegada()),
+                            fecha(p.getHoraSalida()), fecha(parte.getHoraLimiteCompromiso()), "Entregada",
+                            p.getHoraLlegada() <= parte.getHoraLimiteCompromiso() + 1e-6));
+                }
+            }
+            if (pedido != null && paradas.isEmpty()) continue;
+            double[] tray = new double[pts.size()];
+            for (int i = 0; i < tray.length; i++) tray[i] = pts.get(i);
+            double finRuta = Double.isNaN(ultimo.getHoraCierre()) ? ultimo.getHoraRegreso() : ultimo.getHoraCierre();
+            salida.add(new DetalleVisual.RutaAnterior(e.getKey(), vs.getId(), describirCausa(primero.getCausa()),
+                    fecha(primero.getHoraInicio()), fecha(finRuta), primero.getAlmacenSalida().getNombre(),
+                    ultimo.getAlmacenRetorno().getNombre(), redondear(km, 1), paradas, tray));
+        }
+        // la ruta vigente con el mismo id (continuacion en curso) no es "anterior"
+        RutaEnCurso vigente = vs.getRuta();
+        if (vigente != null) salida.removeIf(r -> r.id().equals(vigente.getIdRuta()));
+        java.util.Collections.reverse(salida);
+        return salida;
     }
 
     public DetalleVisual.Pedido detallePedido(String id) {
@@ -1758,7 +1815,17 @@ public class MotorSimulacion {
                 redondear(s.estaActivo() ? s.getPedidoOriginal().calcularHolguraPorcentaje(t) : 0, 1),
                 new ArrayList<>(s.getVehiculos()), new ArrayList<>(s.getAlmacenesOrigen()), new ArrayList<>(s.getRutas()),
                 Double.isNaN(s.getHoraEntregaReal()) ? null : fecha(s.getHoraEntregaReal()), aTiempo, s.estaReprogramado(),
-                s.getCanal().getEtiqueta(), s.getObservaciones(), partes, s.esModificable(), evs);
+                s.getCanal().getEtiqueta(), s.getObservaciones(), partes, s.esModificable(), evs, rutasAnterioresDePedido(s));
+    }
+
+    /** F04: rutas ya recorridas que llevaron (todo o parte de) este pedido, con solo sus escalas. */
+    private List<DetalleVisual.RutaAnterior> rutasAnterioresDePedido(SeguimientoPedido s) {
+        List<DetalleVisual.RutaAnterior> lista = new ArrayList<>();
+        for (String idV : s.getVehiculos()) {
+            VehiculoSim vs = vehiculoPorId.get(idV);
+            if (vs != null) lista.addAll(rutasAnteriores(vs, s.getIdPedido()));
+        }
+        return lista;
     }
 
     public DetalleVisual.Almacen detalleAlmacen(String id) {

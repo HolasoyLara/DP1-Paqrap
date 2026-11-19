@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { AlmacenVisual, EstadoVisual, VehiculoVisual } from '@/lib/tipos';
+import type { AlmacenVisual, EstadoVisual, RutaAnterior, VehiculoVisual } from '@/lib/tipos';
 import {
   BORDE_VACIO, COLOR_AVERIA, COLOR_BLOQUEO, COLOR_BLOQUEO_FRANJA, COLOR_OCUPACION, COLOR_RETORNO, COLOR_RUTA, COLOR_SEMAFORO, porcentaje, type Semaforo,
   semaforo, semaforoOcupacion, type SemaforoOcupacion,
@@ -81,6 +81,8 @@ export interface Filtros {
   origen: string;
   /** E11 (ficha): rango de km al proximo destino en la lista de Transporte ('' = todos). Se guarda aqui para que el filtro sea permanente. */
   rangoKm: RangoKm;
+  /** F17: almacenes ocultos por el usuario (ids), compartido entre el panel y el mapa. */
+  almacenesOcultos: string[];
 }
 
 /** E11 (ficha): rangos [desde, hasta[ en km al proximo destino. */
@@ -102,6 +104,7 @@ export const FILTROS_POR_DEFECTO: Filtros = {
   semaforoAlmacen: { ...TODOS_LOS_COLORES },
   origen: '',
   rangoKm: '',
+  almacenesOcultos: [],
 };
 
 /** La unidad pasa el filtro de tipo, de origen y de semaforo de ocupacion (las averiadas o en taller siempre se muestran). */
@@ -112,8 +115,12 @@ export function vehiculoPasaFiltro(v: VehiculoVisual, f: Filtros, verde: number,
   return f.semaforoUT[ocupacionVehiculo(v, verde, ambar).sem];
 }
 
-/** El almacen pasa el filtro de semaforo de ocupacion (el central, sin semaforo, siempre se muestra). */
+/**
+ * El almacen pasa el filtro por almacen (F17) y el de semaforo de ocupacion (F15; el central, sin semaforo, siempre
+ * lo pasa). Ambos se eligen en el panel y se reflejan en el mapa.
+ */
 export function almacenPasaFiltro(a: AlmacenVisual, f: Filtros, verde: number, ambar: number): boolean {
+  if (f.almacenesOcultos.includes(a.id)) return false;
   const o = ocupacionAlmacen(a, verde, ambar);
   return o == null || f.semaforoAlmacen[o.sem];
 }
@@ -135,7 +142,12 @@ interface Props {
   onHover: (s: Seleccion | null, clientX: number, clientY: number) => void;
   onClicTramo: (x1: number, y1: number, x2: number, y2: number) => void;
   onClicCruce: ((x: number, y: number, clientX: number, clientY: number) => void) | null;
+  /** F02/F04: ruta ya recorrida a dibujar a demanda (null = ninguna). */
+  rutaAnterior?: RutaAnterior | null;
 }
+
+/** Color de la ruta anterior dibujada a demanda: distinto de la ruta en curso (azul), del retorno (turquesa) y de los bloqueos. */
+export const COLOR_RUTA_ANTERIOR = '#c2185b';
 
 const EN_BASE = new Set(['EN_ALMACEN', 'MANTENIMIENTO', 'EN_TALLER']);
 
@@ -637,6 +649,43 @@ export default function MapaOperacion(props: Props) {
             </g>
           );
         })}
+
+        {/* F02/F04: ruta ya recorrida, dibujada a demanda desde el detalle, con sus escalas numeradas */}
+        {props.rutaAnterior && (() => {
+          const ra = props.rutaAnterior;
+          const pts: string[] = [];
+          for (let i = 0; i < ra.trayectoria.length; i += 3) pts.push(`${ra.trayectoria[i]},${sy(ra.trayectoria[i + 1])}`);
+          const n = ra.trayectoria.length;
+          return (
+            <g pointerEvents="none">
+              <polyline points={pts.join(' ')} fill="none" stroke="#fff" strokeWidth={7} strokeLinecap="round" strokeLinejoin="round"
+                vectorEffect="non-scaling-stroke" />
+              <polyline points={pts.join(' ')} fill="none" stroke={COLOR_RUTA_ANTERIOR} strokeWidth={4} strokeLinecap="round"
+                strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              {n >= 3 && (
+                <g transform={`translate(${ra.trayectoria[0]},${sy(ra.trayectoria[1])}) scale(${escala})`}>
+                  <rect x={-8} y={-8} width={16} height={16} rx={3} fill="#fff" stroke={COLOR_RUTA_ANTERIOR} strokeWidth={2.5} />
+                  <text textAnchor="middle" dy={4} fontSize={10} fontWeight={700} fill={COLOR_RUTA_ANTERIOR}>S</text>
+                </g>
+              )}
+              {n >= 3 && (
+                <g transform={`translate(${ra.trayectoria[n - 3]},${sy(ra.trayectoria[n - 2])}) scale(${escala})`}>
+                  <circle r={7} fill={COLOR_RUTA_ANTERIOR} stroke="#fff" strokeWidth={2} />
+                  <text textAnchor="middle" dy={3.5} fontSize={9} fontWeight={700} fill="#fff">F</text>
+                </g>
+              )}
+              {ra.paradas.map((p) => (
+                <g key={p.secuencia} transform={`translate(${p.x},${sy(p.y)}) scale(${escala})`}>
+                  <circle r={10} fill="#fff" stroke={COLOR_RUTA_ANTERIOR} strokeWidth={2.5} />
+                  <text textAnchor="middle" dy={4} fontSize={11} fontWeight={700} fill={COLOR_RUTA_ANTERIOR}>{p.secuencia}</text>
+                  <text x={14} dy={4} fontSize={10.5} fontWeight={600} fill="#1a1a1a" stroke="#fff" strokeWidth={3} paintOrder="stroke">
+                    {`${p.pedido} · llega ${p.llegada.slice(-5)} · sale ${p.salida.slice(-5)}`}
+                  </text>
+                </g>
+              ))}
+            </g>
+          );
+        })()}
 
         <line ref={lineaHoverRef} x1={0} y1={0} x2={0} y2={0} stroke={NAVY} strokeOpacity={0.35} strokeWidth={8}
           strokeLinecap="round" vectorEffect="non-scaling-stroke" visibility="hidden" pointerEvents="none" />

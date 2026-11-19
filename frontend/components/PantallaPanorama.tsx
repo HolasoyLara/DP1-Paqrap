@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api } from '@/lib/api';
-import type { EstadoVisual } from '@/lib/tipos';
+import type { EstadoVisual, RutaAnterior } from '@/lib/tipos';
 import {
   BORDE_VACIO, COLOR_OCUPACION, COLOR_RETORNO, COLOR_RUTA, ETIQUETA_AVERIA, ETIQUETA_OCUPACION, numero, semaforo,
   type SemaforoOcupacion, soles,
 } from '@/lib/formato';
 import MapaOperacion, {
-  acercar, centrarEn, FILTROS_POR_DEFECTO, type Filtros, InsigniaAveria, InsigniaTaller, ocupacionAlmacen, type Seleccion, type Vista, VISTA_COMPLETA, vistaDeZona,
+  acercar, centrarEn, COLOR_RUTA_ANTERIOR, FILTROS_POR_DEFECTO, type Filtros, InsigniaAveria, InsigniaTaller, ocupacionAlmacen, type Seleccion, type Vista, VISTA_COMPLETA, vistaDeZona,
 } from './MapaOperacion';
 import Tooltip, { type TooltipApi } from './Tooltip';
 import { IconoMini } from './Iconos';
@@ -33,6 +33,9 @@ interface Props {
   refrescar: () => void;
   /** Pedido de enfoque desde fuera (boton «Ver ruta en el mapa»); `n` cambia en cada pedido. */
   foco: { x: number; y: number; n: number } | null;
+  /** F02/F04: ruta ya recorrida dibujada a demanda y su cierre. */
+  rutaAnterior: RutaAnterior | null;
+  onOcultarRutaAnterior: () => void;
 }
 
 const TIPOS_RAPIDOS: [string, string][] = [
@@ -54,7 +57,7 @@ function Kpi({ etiqueta, valor, sub, sem }: { etiqueta: string; valor: string; s
 }
 
 /** V-2 · Panorama operativo: franja de KPI, mapa con la operacion en vivo y detalle bajo demanda. */
-export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbrir, onAviso, refrescar, foco }: Props) {
+export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbrir, onAviso, refrescar, foco, rutaAnterior, onOcultarRutaAnterior }: Props) {
   const [vista, setVista] = useState<Vista>(VISTA_COMPLETA);
   const [zona, setZona] = useState('full');
   const [filtros, setFiltros] = useState<Filtros>(FILTROS_POR_DEFECTO);
@@ -173,7 +176,16 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
           onHover={onHover}
           onClicTramo={alClicTramo}
           onClicCruce={diaADia && enCurso ? alClicCruce : null}
+          rutaAnterior={rutaAnterior}
         />
+        {rutaAnterior && (
+          <div className="aviso-ruta-anterior" onPointerDown={(e) => e.stopPropagation()}>
+            <span className="muestra" style={{ background: COLOR_RUTA_ANTERIOR }} />
+            <span>Ruta anterior <b>{rutaAnterior.id}</b> · {rutaAnterior.vehiculo} · {rutaAnterior.salida} – {rutaAnterior.fin.slice(-5)}
+              {' '}· {rutaAnterior.paradas.length} escala{rutaAnterior.paradas.length === 1 ? '' : 's'}</span>
+            <button type="button" className="btn-flot" onClick={onOcultarRutaAnterior}>Ocultar</button>
+          </div>
+        )}
 
         <div className="mapa-controles" onPointerDown={(e) => e.stopPropagation()}>
           <button className={'btn-flot' + (verPanel ? ' activo' : '')} onClick={() => setVerPanel((x) => !x)}>Panel</button>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import type { DetalleAlmacen, DetallePedido, DetalleVehiculo, EventoDetalle } from '@/lib/tipos';
+import type { DetalleAlmacen, DetallePedido, DetalleVehiculo, EventoDetalle, RutaAnterior } from '@/lib/tipos';
 import {
   claseOcupacion, ETIQUETA_EVENTO, ETIQUETA_OCUPACION, ETIQUETA_SEMAFORO, numero, porcentaje, semaforo, semaforoOcupacion, soles,
 } from '@/lib/formato';
@@ -19,6 +19,10 @@ interface Props {
   /** Va a Panorama y centra el mapa (F01/F03, F09). */
   onVerEnMapa: (x: number, y: number) => void;
   onAviso: (texto: string, tipo?: 'ok' | 'error') => void;
+  /** F02/F04: dibuja en el mapa una ruta ya recorrida. */
+  onVerRutaAnterior: (r: RutaAnterior) => void;
+  /** Clave «unidad:ruta» de la ruta anterior dibujada en el mapa (o null). */
+  rutaAnteriorActiva: string | null;
 }
 
 const TIPOS_ENTREGA = [
@@ -66,6 +70,50 @@ function Tramos({ ruta, onAbrir }: { ruta: NonNullable<DetalleVehiculo['ruta']>;
   );
 }
 
+/** F02/F04: rutas ya recorridas, con sus escalas, y el boton para dibujarlas en el mapa a demanda. */
+function RutasAnteriores({ rutas, activa, onVer, onAbrir, conUnidad }: {
+  rutas: RutaAnterior[]; activa: string | null; onVer: (r: RutaAnterior) => void; onAbrir: (s: Seleccion) => void; conUnidad: boolean;
+}) {
+  const [abierta, setAbierta] = useState<string | null>(null);
+  if (!rutas.length) return <p className="empty-hint">Todavía no hay rutas terminadas.</p>;
+  return (
+    <ul className="rutas-anteriores">
+      {rutas.map((r) => {
+        const clave = r.vehiculo + ':' + r.id;
+        const ab = abierta === clave;
+        return (
+          <li key={clave} className={'ruta-anterior' + (activa === clave ? ' activa' : '')}>
+            <div className="ruta-anterior-cab">
+              <button type="button" className="btn-desplegar" onClick={() => setAbierta(ab ? null : clave)} title="Ver escalas">{ab ? '▾' : '▸'}</button>
+              <b>Ruta {r.id}</b>
+              {conUnidad && (
+                <button type="button" className="chip-pedido" onClick={() => onAbrir({ tipo: 'vehiculo', id: r.vehiculo })}>{r.vehiculo}</button>
+              )}
+              <span className="hint">{soloHora(r.salida)}–{soloHora(r.fin)} · {r.paradas.length} escala{r.paradas.length === 1 ? '' : 's'} · {numero(r.km, 1)} km</span>
+              <button type="button" className="btn btn-sm btn-primary" onClick={() => onVer(r)}>Ver en el mapa</button>
+            </div>
+            {ab && (
+              <ol className="tramos-lista" style={{ marginTop: 6 }}>
+                <li className="tramo hecho"><span className="tramo-num">0</span>
+                  <span className="tramo-ruta">Sale de {r.almacenSalida} · {r.causa}</span><span className="tramo-horas">{r.salida}</span></li>
+                {r.paradas.map((p) => (
+                  <li key={p.secuencia} className="tramo hecho fila-click" onClick={() => onAbrir({ tipo: 'pedido', id: p.pedido })}>
+                    <span className="tramo-num">{p.secuencia}</span>
+                    <span className="tramo-ruta">({p.x}, {p.y}) · pedido {p.pedido} · {p.cantidad} paq. {p.aTiempo ? '' : '· fuera de plazo'}</span>
+                    <span className="tramo-horas">llega {soloHora(p.llegada)} · sale {soloHora(p.salida)}</span>
+                  </li>
+                ))}
+                <li className="tramo hecho"><span className="tramo-num">↩</span>
+                  <span className="tramo-ruta">Termina ({r.almacenRetorno})</span><span className="tramo-horas">{r.fin}</span></li>
+              </ol>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function tipoDesdeEtiqueta(etiqueta: string): string {
   const horas = etiqueta.match(/(\d+)\s*h/);
   if (!horas || etiqueta.startsWith('Regular')) return 'REGULAR_36H';
@@ -103,7 +151,7 @@ function Kv({ pares }: { pares: [string, React.ReactNode][] }) {
   );
 }
 
-export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar, onCerrar, onAbrir, onVerEnMapa, onAviso }: Props) {
+export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar, onCerrar, onAbrir, onVerEnMapa, onAviso, onVerRutaAnterior, rutaAnteriorActiva }: Props) {
   const [datos, setDatos] = useState<DetalleVehiculo | DetallePedido | DetalleAlmacen | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [edicion, setEdicion] = useState<{ cantidad: number; tipo: string; observaciones: string } | null>(null);
@@ -258,6 +306,8 @@ export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar
         ) : (
           <p className="empty-hint">La unidad no tiene ruta asignada en este momento.</p>
         )}
+        <h3 style={{ marginTop: 18 }}>Rutas anteriores ({v.rutasAnteriores.length})</h3>
+        <RutasAnteriores rutas={v.rutasAnteriores} activa={rutaAnteriorActiva} onVer={onVerRutaAnterior} onAbrir={onAbrir} conUnidad={false} />
         <h3 style={{ marginTop: 18 }}>Historial de eventos de este vehículo</h3>
         <Eventos eventos={v.eventos} vacio="Sin eventos registrados todavía para esta unidad." />
       </>
@@ -324,6 +374,8 @@ export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar
             )}
           </div>
         )}
+        <h3 style={{ marginTop: 10 }}>Rutas anteriores del pedido ({p.rutasAnteriores.length})</h3>
+        <RutasAnteriores rutas={p.rutasAnteriores} activa={rutaAnteriorActiva} onVer={onVerRutaAnterior} onAbrir={onAbrir} conUnidad />
         <h3 style={{ marginTop: 10 }}>Trazabilidad del pedido</h3>
         <Eventos eventos={p.eventos} vacio="Sin eventos todavía." />
       </>

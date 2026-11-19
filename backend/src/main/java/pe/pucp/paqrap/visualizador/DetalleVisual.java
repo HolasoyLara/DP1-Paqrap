@@ -22,11 +22,20 @@ public final class DetalleVisual {
                               String almacenRetorno, int carga, List<ParadaDetalle> paradas) {
     }
 
+    /**
+     * F02/F04: ruta ya recorrida, para dibujarla a demanda en el mapa con sus escalas. La trayectoria es plana
+     * [x, y, minuto, x, y, minuto, ...] (minutos simulados desde el inicio de la corrida) y llega solo hasta
+     * donde la unidad la recorrio (cierre de la ruta o regreso al almacen).
+     */
+    public record RutaAnterior(String id, String vehiculo, String causa, String salida, String fin, String almacenSalida,
+                               String almacenRetorno, double km, List<ParadaDetalle> paradas, double[] trayectoria) {
+    }
+
     public record Vehiculo(String id, String tipo, String estado, double x, double y, String almacenBase,
                            int capacidad, int carga, double velocidad, double costoKm, List<String> horasAlimentacion,
                            String turnoActual, String proximoMantenimiento, String averia, RutaDetalle ruta,
                            List<String> pedidosABordo, String proximaParada, String eta, int rutasRealizadas,
-                           int entregas, double km, double costo, List<Evento> eventos) {
+                           int entregas, double km, double costo, List<Evento> eventos, List<RutaAnterior> rutasAnteriores) {
     }
 
     public record Parte(String id, int cantidad, String estado) {
@@ -36,7 +45,7 @@ public final class DetalleVisual {
                          String registro, String limite, String estado, double holgura, List<String> vehiculos,
                          List<String> almacenes, List<String> rutas, String entregaReal, Boolean aTiempo,
                          boolean reprogramado, String canal, String observaciones, List<Parte> partes,
-                         boolean modificable, List<Evento> eventos) {
+                         boolean modificable, List<Evento> eventos, List<RutaAnterior> rutasAnteriores) {
     }
 
     public record Almacen(String id, String nombre, double x, double y, boolean central, Integer capacidad,

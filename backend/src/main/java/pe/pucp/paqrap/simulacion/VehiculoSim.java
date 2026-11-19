@@ -23,7 +23,10 @@ public final class VehiculoSim {
     private static final int MAX_EVENTOS = 40;
 
     private final Vehiculo vehiculo;
+    private static final int MAX_RUTAS_CERRADAS = 200;
+
     private RutaEnCurso ruta;
+    private final List<RutaEnCurso> rutasCerradas = new ArrayList<>();
     private Averia averia;
     private Coordenada posicionAveria;
     private final Deque<EventoUnidad> eventos = new ArrayDeque<>();
@@ -103,7 +106,16 @@ public final class VehiculoSim {
     public Vehiculo getVehiculo() { return vehiculo; }
     public String getId() { return vehiculo.getIdVehiculo(); }
     public RutaEnCurso getRuta() { return ruta; }
-    public void setRuta(RutaEnCurso ruta) { this.ruta = ruta; }
+    /** Al reemplazar o terminar la ruta vigente, la anterior pasa al historial (F02/F04: rutas anteriores a demanda). */
+    public void setRuta(RutaEnCurso ruta) {
+        if (this.ruta != null && this.ruta != ruta) {
+            rutasCerradas.add(this.ruta);
+            if (rutasCerradas.size() > MAX_RUTAS_CERRADAS) rutasCerradas.remove(0);
+        }
+        this.ruta = ruta;
+    }
+    /** Tramos de ruta ya cerrados (una ruta cambiada en camino deja varios tramos con el mismo id), del mas antiguo al mas reciente. */
+    public List<RutaEnCurso> getRutasCerradas() { return rutasCerradas; }
     public Averia getAveria() { return averia; }
     public void setAveria(Averia averia, Coordenada posicion) {
         this.averia = averia;

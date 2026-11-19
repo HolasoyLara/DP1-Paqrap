@@ -94,6 +94,16 @@ button { font-family: inherit; cursor: pointer; }
 .btn-start { background: var(--green); color: #fff; }
 .btn-stop { background: var(--red); color: #fff; }
 .btn-primary { background: var(--navy); color: #fff; }
+.campo-horas { display: inline-flex !important; align-items: center; gap: 4px; margin: 0 !important; font-weight: 500; }
+.campo-horas input { width: 58px; }
+/* F02/F04: rutas anteriores en el detalle y aviso de la ruta dibujada en el mapa */
+.rutas-anteriores { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ruta-anterior { border: 1px solid var(--border); border-radius: 7px; padding: 6px 8px; }
+.ruta-anterior.activa { border-color: #c2185b; box-shadow: inset 3px 0 0 #c2185b; }
+.ruta-anterior-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; }
+.ruta-anterior-cab .btn { margin-left: auto; }
+.aviso-ruta-anterior { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 40; display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--border); border-radius: 9px; padding: 6px 8px 6px 12px; box-shadow: 0 4px 14px rgba(15,30,41,.18); font-size: 12.5px; max-width: calc(100vw - 32px); flex-wrap: wrap; }
+.aviso-ruta-anterior .muestra { width: 22px; height: 4px; border-radius: 2px; flex: none; }
 /* Ritmo de la corrida (5 dias y colapso): pausar/reanudar y velocidad relativa */
 .control-ritmo { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border-radius: 8px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); }
 .control-ritmo .btn-ritmo { min-width: 30px; height: 30px; padding: 0 8px; border: none; border-radius: 6px; background: transparent; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }

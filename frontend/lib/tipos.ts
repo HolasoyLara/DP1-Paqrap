@@ -186,6 +186,20 @@ export interface ParadaDetalle {
   aTiempo: boolean;
 }
 
+/** F02/F04: ruta ya recorrida; trayectoria plana [x, y, minuto, ...] hasta donde se recorrio. */
+export interface RutaAnterior {
+  id: string;
+  vehiculo: string;
+  causa: string;
+  salida: string;
+  fin: string;
+  almacenSalida: string;
+  almacenRetorno: string;
+  km: number;
+  paradas: ParadaDetalle[];
+  trayectoria: number[];
+}
+
 export interface DetalleVehiculo {
   id: string;
   tipo: string;
@@ -219,6 +233,7 @@ export interface DetalleVehiculo {
   km: number;
   costo: number;
   eventos: EventoDetalle[];
+  rutasAnteriores: RutaAnterior[];
 }
 
 export interface DetallePedido {
@@ -244,6 +259,7 @@ export interface DetallePedido {
   partes: { id: string; cantidad: number; estado: string }[];
   modificable: boolean;
   eventos: EventoDetalle[];
+  rutasAnteriores: RutaAnterior[];
 }
 
 export interface DetalleAlmacen {
