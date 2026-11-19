@@ -6,6 +6,7 @@ import {
   ahoraLimaTexto, COLOR_OCUPACION, ETIQUETA_OCUPACION, fechaHoraCompleta, numero, porcentaje, semaforoOcupacion,
   type SemaforoOcupacion, transcurridoReal, transcurridoSimulado,
 } from '@/lib/formato';
+import ControlRitmo, { type CambioRitmo } from './ControlRitmo';
 
 interface Props {
   estado: EstadoVisual | null;
@@ -16,6 +17,7 @@ interface Props {
   ocupado: boolean;
   onIniciar: () => void;
   onDetener: () => void;
+  onRitmo: (cambio: CambioRitmo) => void;
   /** Abre la barra lateral (solo en las pantallas con cabecera). */
   onMenu?: () => void;
 }
@@ -65,9 +67,10 @@ function KpiGlobal({ etiqueta, pct, sem, sub }: { etiqueta: string; pct: number;
 
 /**
  * Encabezado permanente: escenario activo, los 4 tiempos de la rubrica (C12-C16) en un bloque 2x2,
- * los indicadores globales de ocupacion (G01-G04) y los unicos controles de la corrida: iniciar y detener.
+ * los indicadores globales de ocupacion (G01-G04) y los controles de la corrida: iniciar, detener y, en 5 dias y
+ * colapso, pausar y cambiar la velocidad.
  */
-export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoTexto, puedeIniciar, ocupado, onIniciar, onDetener, onMenu }: Props) {
+export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoTexto, puedeIniciar, ocupado, onIniciar, onDetener, onRitmo, onMenu }: Props) {
   const [, setTic] = useState(0);
   // la hora actual solo existe en el navegador: se muestra despues de montar para no desajustar la pagina estatica
   const [montado, setMontado] = useState(false);
@@ -112,9 +115,9 @@ export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoT
           {hayCorrida ? ` · semilla ${estado!.semilla}` : ''}
         </div>
         <div className="scenario">
-          <span className="clock-state">{estado ? ESTADO_TEXTO[estado.estadoCorrida] : 'Conectando…'}</span>
+          <span className="clock-state">{estado ? (enCurso && estado.pausada ? 'Corrida: en pausa' : ESTADO_TEXTO[estado.estadoCorrida]) : 'Conectando…'}</span>
           {diaTexto && <> · {diaTexto}</>}
-          {enCurso && estado ? <span className="chip-factor">Aceleración ×{formatoFactor(estado.factor)}</span> : null}
+          {enCurso && estado && !estado.pausada ? <span className="chip-factor">Aceleración ×{formatoFactor(estado.factor)}</span> : null}
         </div>
       </div>
       <div className="topbar-right">
@@ -132,6 +135,7 @@ export default function TopBar({ estado, minutoAhora, escenarioTexto, algoritmoT
           <div className="reloj-celda"><span>Fecha y hora actual</span><b suppressHydrationWarning>{montado ? ahoraLimaTexto() : '—'}</b></div>
           <div className="reloj-celda"><span>Transcurrido real</span><b>{hayCorrida ? transcurridoReal(segundosReales) : '—'}</b></div>
         </div>
+        <ControlRitmo estado={estado} ocupado={ocupado} onCambiar={onRitmo} />
         <button className="btn btn-start" disabled={!puedeIniciar || ocupado || enCurso} onClick={onIniciar}>Iniciar corrida</button>
         <button className="btn btn-stop" disabled={!enCurso || ocupado} onClick={onDetener}>Detener corrida</button>
       </div>

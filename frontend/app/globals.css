@@ -94,6 +94,19 @@ button { font-family: inherit; cursor: pointer; }
 .btn-start { background: var(--green); color: #fff; }
 .btn-stop { background: var(--red); color: #fff; }
 .btn-primary { background: var(--navy); color: #fff; }
+/* Ritmo de la corrida (5 dias y colapso): pausar/reanudar y velocidad relativa */
+.control-ritmo { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border-radius: 8px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); }
+.control-ritmo .btn-ritmo { min-width: 30px; height: 30px; padding: 0 8px; border: none; border-radius: 6px; background: transparent; color: #fff; font-size: 13px; font-weight: 700; line-height: 1; }
+.control-ritmo .btn-ritmo:hover:not(:disabled) { background: rgba(255,255,255,.18); }
+.control-ritmo .btn-ritmo:disabled { opacity: .35; cursor: default; }
+.control-ritmo .btn-ritmo.activo { background: #f5c400; color: #1a1a1a; }
+.control-ritmo .ritmo-valor { min-width: 44px; text-align: center; color: #fff; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.barra-mapa { flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 20px); }
+.control-ritmo.compacto { background: #fff; border-color: var(--border); }
+.control-ritmo.compacto .btn-ritmo { min-width: 26px; height: 26px; padding: 0 6px; color: var(--navy); font-size: 12px; }
+.control-ritmo.compacto .btn-ritmo:hover:not(:disabled) { background: var(--navy-tint); }
+.control-ritmo.compacto .btn-ritmo.activo { background: #f5c400; color: #1a1a1a; }
+.control-ritmo.compacto .ritmo-valor { color: var(--navy); min-width: 38px; font-size: 12px; }
 .btn-start:hover:not(:disabled), .btn-stop:hover:not(:disabled), .btn-primary:hover:not(:disabled) { opacity: .9; }
 .btn-lg { padding: 12px 22px; font-size: 14px; }
 .btn-sm { padding: 6px 10px; font-size: 12px; }

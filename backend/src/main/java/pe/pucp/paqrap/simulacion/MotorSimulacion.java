@@ -1643,7 +1643,7 @@ public class MotorSimulacion {
                     parametros.getAlgoritmo(), parametros.getSemilla(), ConversorTiempo.aEpochMs(horaInicio), minutos(t),
                     Double.isInfinite(horaFin) ? null : minutos(horaFin), factor, tiempoRealSeg, dia, totalDias,
                     parametros.getUmbrales().getVerde(), parametros.getUmbrales().getAmbar(), kpis, listaAlmacenes, listaVehiculos,
-                    listaPedidos, listaBloqueos, red.getTramosBloqueados(), alertas, colapso, null);
+                    listaPedidos, listaBloqueos, red.getTramosBloqueados(), alertas, colapso, null, 1.0, false);
         } finally {
             candado.unlock();
         }

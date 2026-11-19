@@ -71,6 +71,9 @@ export const api = {
   estado: () => pedir<EstadoVisual>('/api/simulacion/estado'),
   iniciar: (p: Partial<ParametrosCorrida>) => pedir<EstadoVisual>('/api/simulacion/iniciar', json('POST', p)),
   detener: () => pedir<CierreCorrida>('/api/simulacion/detener', json('POST')),
+  /** Ritmo de la corrida (5 dias y colapso): velocidad relativa al ritmo base y/o pausa. */
+  ritmo: (cambios: { velocidad?: number; pausada?: boolean }) =>
+    pedir<{ velocidad: number; pausada: boolean; mensaje: string }>('/api/simulacion/ritmo', json('PUT', cambios)),
   cierre: () => pedir<CierreCorrida>('/api/simulacion/cierre'),
   vehiculo: (id: string) => pedir<DetalleVehiculo>(`/api/simulacion/vehiculos/${encodeURIComponent(id)}`),
   pedido: (id: string) => pedir<DetallePedido>(`/api/simulacion/pedidos/${encodeURIComponent(id)}`),

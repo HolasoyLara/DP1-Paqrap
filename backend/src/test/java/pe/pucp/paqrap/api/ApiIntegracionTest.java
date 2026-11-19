@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,6 +67,9 @@ class ApiIntegracionTest {
         mvc.perform(post("/api/simulacion/averias").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"vehiculo\":\"TB12\",\"tipo\":2}"))
                 .andExpect(status().isOk());
+        // el dia a dia sigue al reloj real: no se puede pausar ni acelerar
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"pausada\":true}"))
+                .andExpect(status().isConflict());
         mvc.perform(get("/api/simulacion/vehiculos/TA01")).andExpect(status().isOk());
         mvc.perform(get("/api/simulacion/almacenes/ESTE")).andExpect(status().isOk());
         mvc.perform(get("/api/pedidos").param("q", "PW")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(1));
@@ -80,5 +84,41 @@ class ApiIntegracionTest {
         mvc.perform(get("/api/simulacion/cierre/csv")).andExpect(status().isOk());
         Thread.sleep(2500);
         mvc.perform(get("/api/corridas")).andExpect(status().isOk()).andExpect(jsonPath("$[0].tieneCierre").value(true));
+
+        // simulacion de 5 dias: pausar congela el reloj; la velocidad cambia el factor y se acota a x0.25 - x8
+        mvc.perform(post("/api/simulacion/iniciar").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"escenario\":\"SIMULACION_5D\",\"algoritmo\":\"ACO\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.velocidad").value(1.0))
+                .andExpect(jsonPath("$.pausada").value(false));
+        Thread.sleep(300);
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"pausada\":true}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.pausada").value(true));
+        Thread.sleep(300);
+        double enPausa = minutoActual();
+        Thread.sleep(600);
+        org.junit.jupiter.api.Assertions.assertEquals(enPausa, minutoActual(), 1e-9, "en pausa el reloj no avanza");
+        mvc.perform(get("/api/simulacion/estado")).andExpect(jsonPath("$.pausada").value(true)).andExpect(jsonPath("$.factor").value(0.0));
+
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"pausada\":false,\"velocidad\":4}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.velocidad").value(4.0));
+        Thread.sleep(600);
+        org.junit.jupiter.api.Assertions.assertTrue(minutoActual() > enPausa, "al reanudar el reloj vuelve a avanzar");
+        // factor base de 5 dias en 45 min = 160 h/h; a x4 = 640
+        mvc.perform(get("/api/simulacion/estado")).andExpect(jsonPath("$.factor").value(640.0));
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"velocidad\":100}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.velocidad").value(8.0));
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"velocidad\":0}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/simulacion/detener")).andExpect(status().isOk());
+        mvc.perform(put("/api/simulacion/ritmo").contentType(MediaType.APPLICATION_JSON).content("{\"pausada\":true}"))
+                .andExpect(status().isConflict());
+    }
+
+    private double minutoActual() throws Exception {
+        String cuerpo = mvc.perform(get("/api/simulacion/estado")).andReturn().getResponse().getContentAsString();
+        return com.jayway.jsonpath.JsonPath.<Number>read(cuerpo, "$.minutoActual").doubleValue();
     }
 }

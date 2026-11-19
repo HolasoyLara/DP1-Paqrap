@@ -8,6 +8,7 @@ import { useEstadoSimulacion } from '@/lib/useEstadoSimulacion';
 import TopBar from '@/components/TopBar';
 import Sidebar, { type Modo } from '@/components/Sidebar';
 import BarraMapa from '@/components/BarraMapa';
+import type { CambioRitmo } from '@/components/ControlRitmo';
 import PantallaParametros from '@/components/PantallaParametros';
 import PantallaPanorama from '@/components/PantallaPanorama';
 import PantallaCierre from '@/components/PantallaCierre';
@@ -204,6 +205,16 @@ export default function Pagina() {
     }
   };
 
+  /** Pausa/reanuda o cambia la velocidad de la corrida (5 dias y colapso); se refresca al instante para que el mapa no extrapole con el ritmo anterior. */
+  const cambiarRitmo = async (cambio: CambioRitmo) => {
+    try {
+      await api.ritmo(cambio);
+      await refrescar();
+    } catch (e) {
+      aviso(e instanceof Error ? e.message : 'No se pudo cambiar la velocidad', 'error');
+    }
+  };
+
   /**
    * Sube uno o varios archivos de un tipo. Ventas y bloqueos son mensuales: un periodo que cruza de mes (p. ej. el caso del
    * 30 de septiembre) necesita 2 archivos. El mes sale del nombre (ventas.202609, bloqueo.2610); si el nombre no lo dice, se
@@ -275,6 +286,7 @@ export default function Pagina() {
             ocupado={ocupado}
             onIniciar={iniciar}
             onDetener={detener}
+            onRitmo={cambiarRitmo}
             infoAbierta={infoMapa}
             onInfo={() => setInfoMapa((x) => !x)}
           />
@@ -289,6 +301,7 @@ export default function Pagina() {
                 ocupado={ocupado}
                 onIniciar={iniciar}
                 onDetener={detener}
+                onRitmo={cambiarRitmo}
               />
             </div>
           )}
@@ -304,6 +317,7 @@ export default function Pagina() {
             ocupado={ocupado}
             onIniciar={iniciar}
             onDetener={detener}
+            onRitmo={cambiarRitmo}
             onMenu={() => setMenuAbierto(true)}
           />
         </div>

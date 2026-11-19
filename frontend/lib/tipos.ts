@@ -159,6 +159,10 @@ export interface EstadoVisual {
   alertas: AlertaVisual[];
   colapso: InfoColapso | null;
   mensaje: string | null;
+  /** Velocidad elegida por el usuario, relativa al ritmo base del escenario (1 = ritmo base; 5 dias y colapso). */
+  velocidad: number;
+  /** Corrida en pausa: el reloj simulado no avanza (factor = 0). */
+  pausada: boolean;
 }
 
 export interface EventoDetalle {

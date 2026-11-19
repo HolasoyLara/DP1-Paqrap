@@ -221,6 +221,20 @@ public class ServicioSimulacion {
         c.refrescar();
     }
 
+    /**
+     * Cambia el ritmo de la corrida en curso (velocidad relativa y/o pausa). Solo en la simulacion del periodo y
+     * en el colapso: la operacion dia a dia sigue al reloj real.
+     */
+    public Corrida cambiarRitmo(Double velocidad, Boolean pausada) {
+        Corrida c = corridaEnCurso();
+        if (c.getMotor().getParametros().getEscenario() == Escenario.TIEMPO_REAL) {
+            throw new IllegalStateException("La operación día a día sigue al reloj real: su velocidad no se puede cambiar.");
+        }
+        if (velocidad == null && pausada == null) throw new IllegalArgumentException("Indique la velocidad o la pausa.");
+        c.cambiarRitmo(velocidad, pausada);
+        return c;
+    }
+
     /** Mes al que se asocia un archivo subido sin mes en el nombre: el de la corrida en curso o el de hoy. */
     public java.time.YearMonth mesDeReferencia() {
         Corrida c = actual;

@@ -40,7 +40,21 @@ public record EstadoVisual(
         List<int[]> tramosManuales,
         List<AlertaVisual> alertas,
         InfoColapso colapso,
-        String mensaje) {
+        String mensaje,
+        double velocidad,
+        boolean pausada) {
+
+    /**
+     * Copia con el ritmo elegido por el usuario (velocidad relativa al ritmo base del escenario y pausa) y,
+     * si se indica, un mensaje. {@code factor} ya debe ser el efectivo (0 en pausa) para que el navegador
+     * no extrapole el reloj mientras la corrida esta pausada.
+     */
+    public EstadoVisual conRitmo(double factorEfectivo, double velocidad, boolean pausada, String mensaje) {
+        return new EstadoVisual(version, idCorrida, estadoCorrida, escenario, escenarioEtiqueta, algoritmo, semilla, inicioMs,
+                minutoActual, minutoFin, factorEfectivo, tiempoRealSeg, diaActual, totalDias, umbralVerde, umbralAmbar, kpis,
+                almacenes, vehiculos, pedidos, bloqueos, tramosManuales, alertas, colapso,
+                mensaje != null ? mensaje : this.mensaje, velocidad, pausada);
+    }
 
     public record Kpis(int registrados, int entregados, int entregadosATiempo, int enCurso, int pendientes,
                        int incumplidos, double cumplimiento, double costo, double km, int flotaActiva, int flotaTotal,

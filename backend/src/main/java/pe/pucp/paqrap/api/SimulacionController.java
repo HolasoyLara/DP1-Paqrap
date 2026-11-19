@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pe.pucp.paqrap.simulacion.CierreCorrida;
+import pe.pucp.paqrap.simulacion.Corrida;
 import pe.pucp.paqrap.simulacion.ParametrosCorrida;
 import pe.pucp.paqrap.simulacion.ServicioSimulacion;
 import pe.pucp.paqrap.visualizador.DetalleVisual;
@@ -44,6 +45,9 @@ public class SimulacionController {
     }
 
     public record SolicitudVelocidades(Double auto, Double moto, Double bicicleta) {
+    }
+
+    public record SolicitudRitmo(Double velocidad, Boolean pausada) {
     }
 
     private final ServicioSimulacion simulacion;
@@ -119,6 +123,18 @@ public class SimulacionController {
     public Map<String, String> velocidades(@RequestBody SolicitudVelocidades s) {
         simulacion.actualizarVelocidades(s.auto(), s.moto(), s.bicicleta());
         return Map.of("mensaje", "Velocidades actualizadas: aplican desde la siguiente ventana de planificación.");
+    }
+
+    /** Ritmo de la corrida (5 dias y colapso): velocidad relativa al ritmo base (x0.25 - x8) y pausa/reanudar. */
+    @PutMapping("/ritmo")
+    public Map<String, Object> ritmo(@RequestBody SolicitudRitmo s) {
+        Corrida c = simulacion.cambiarRitmo(s.velocidad(), s.pausada());
+        return Map.of("velocidad", c.getVelocidad(), "pausada", c.estaPausada(),
+                "mensaje", c.estaPausada() ? "Corrida en pausa." : "Velocidad ×" + formatoVelocidad(c.getVelocidad()) + ".");
+    }
+
+    private static String formatoVelocidad(double v) {
+        return v == Math.rint(v) ? String.valueOf((long) v) : String.valueOf(v).replace('.', ',');
     }
 
     @GetMapping("/cierre")
