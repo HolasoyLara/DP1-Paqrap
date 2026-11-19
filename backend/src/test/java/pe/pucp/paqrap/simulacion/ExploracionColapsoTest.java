@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 
 /**
  * Exploracion (no corre por defecto): desde que fecha de inicio colapsa la
- * operacion con cada algoritmo. Se ejecuta con -Dpaqrap.explorar=true.
+ * operacion con cada algoritmo. Se ejecuta con -Dpaqrap.explorar=true
+ * (y opcionalmente -Dpaqrap.algoritmos=GA).
  */
 class ExploracionColapsoTest {
 
@@ -23,7 +24,9 @@ class ExploracionColapsoTest {
                 LocalDateTime.of(2027, 7, 1, 0, 0),
                 LocalDateTime.of(2028, 1, 1, 0, 0),
         };
-        for (String alg : new String[]{"GA", "ACO"}) {
+        // -Dpaqrap.algoritmos=GA limita la exploracion a los algoritmos indicados (por defecto, ambos)
+        String[] algoritmos = System.getProperty("paqrap.algoritmos", "GA,ACO").split(",");
+        for (String alg : algoritmos) {
             for (LocalDateTime inicio : inicios) {
                 ParametrosCorrida p = new ParametrosCorrida();
                 p.setEscenario(Escenario.COLAPSO_LOGISTICO);
