@@ -779,4 +779,3 @@ export function centrarEn(v: Vista, x: number, y: number, anchoMax = VB_W / 1.8)
   return limitar({ cx: x, cy: ALTO_KM - y, ancho: Math.min(v.ancho, anchoMax) });
 }
 
-export const ANCHO_VISTA_COMPLETA = VB_W;

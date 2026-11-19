@@ -51,7 +51,6 @@ function json(metodo: string, cuerpo?: unknown): RequestInit {
 }
 
 export const api = {
-  salud: () => pedir<{ estado: string }>('/api/salud'),
   configuracion: () => pedir<Configuracion>('/api/config'),
   archivos: (escenario: string, fechaInicio: string, dias: number) =>
     pedir<ResumenArchivo[]>(

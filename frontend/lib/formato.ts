@@ -2,20 +2,7 @@
 // Las horas de la simulacion viajan como "epoch ms en UTC" de la fecha local, asi que
 // siempre se formatean en UTC para no desplazarlas.
 
-const DIAS_SEM = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-
 export const dos = (n: number) => (n < 10 ? '0' : '') + n;
-
-export function fechaLarga(ms: number): string {
-  const d = new Date(ms);
-  return `${DIAS_SEM[d.getUTCDay()]} ${dos(d.getUTCDate())} ${MESES[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
-
-export function horaMinuto(ms: number): string {
-  const d = new Date(ms);
-  return `${dos(d.getUTCHours())}:${dos(d.getUTCMinutes())}`;
-}
 
 export function fechaHoraCorta(ms: number): string {
   const d = new Date(ms);

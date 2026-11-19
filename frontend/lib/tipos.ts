@@ -481,11 +481,3 @@ export interface CorridaHistorial {
   tieneCierre: boolean;
 }
 
-export interface ResumenEstadistico {
-  n: number;
-  media: number;
-  desviacion: number;
-  minimo: number;
-  maximo: number;
-}
-
