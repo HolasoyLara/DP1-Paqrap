@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Configuracion, ParametrosCorrida, ResumenArchivo } from '@/lib/tipos';
 
 interface Props {
@@ -22,7 +22,57 @@ interface Props {
   onVelocidadesEnVivo: (auto: number, moto: number, bicicleta: number) => void;
 }
 
-const CAMPOS_VELOCIDAD = new Set(['velocidadAuto', 'velocidadMoto', 'velocidadBicicleta']);
+/** Flota por tipo: [tipo, letra, campo de cantidad, capacidad, velocidad, costo por km]. */
+const FLOTA = [
+  ['Auto', 'A', 'cantidadAutos', 'capacidadAuto', 'velocidadAuto', 'costoKmAuto'],
+  ['Moto', 'M', 'cantidadMotos', 'capacidadMoto', 'velocidadMoto', 'costoKmMoto'],
+  ['Bicicleta', 'B', 'cantidadBicicletas', 'capacidadBicicleta', 'velocidadBicicleta', 'costoKmBicicleta'],
+] as const;
+
+const PLAZOS = [
+  ['plazoRegularH', 'Regular'], ['plazoPriorizada4H', 'Priorizada 4 h'], ['plazoPriorizada8H', 'Priorizada 8 h'],
+  ['plazoPriorizada12H', 'Priorizada 12 h'], ['plazoPriorizada18H', 'Priorizada 18 h'],
+] as const;
+
+/** Nombre legible y ayuda de cada parametro de los algoritmos (GA y ACO). */
+const PARAM_ALGORITMO: Record<string, [string, string]> = {
+  poblacion: ['Tamaño de la población', 'Individuos por generación'],
+  generaciones: ['Generaciones', 'Iteraciones del GA por ventana'],
+  tasaCruce: ['Tasa de cruce', 'Probabilidad de cruce OX (0–1)'],
+  tasaMutacion: ['Tasa de mutación', 'Probabilidad de mutación swap (0–1)'],
+  torneo: ['Tamaño del torneo', 'Individuos por selección'],
+  hormigas: ['Hormigas', 'Soluciones por iteración'],
+  iteraciones: ['Iteraciones', 'Iteraciones del ACO por ventana'],
+  alfa: ['α · peso de la feromona', 'Exponente de la feromona'],
+  beta: ['β · peso de la heurística', 'Exponente de la cercanía/urgencia'],
+  evaporacion: ['Tasa de evaporación', 'Fracción que se evapora (0–1)'],
+  q0: ['q0 · explotación', 'Prob. de elegir el mejor (0–1)'],
+};
+
+function sonHoras(texto: string, horas: number[]): boolean {
+  const t = texto.split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number);
+  return t.length === horas.length && t.every((x, i) => x === horas[i]);
+}
+
+function formatoFactor(f: number): string {
+  return Number.isFinite(f) ? (f >= 10 ? Math.round(f).toString() : f.toFixed(1)) : '—';
+}
+
+/** Campo del formulario avanzado: etiqueta arriba (una linea), control con su unidad a la derecha y ayuda debajo. */
+function Campo({ etiqueta, unidad, ayuda, error, children }: {
+  etiqueta: string; unidad?: string; ayuda?: string; error?: boolean; children: React.ReactNode;
+}) {
+  return (
+    <label className={'av-campo' + (error ? ' av-error' : '')}>
+      <span className="av-etiqueta" title={etiqueta}>{etiqueta}</span>
+      <span className="av-control">
+        {children}
+        {unidad && <span className="av-unidad">{unidad}</span>}
+      </span>
+      {ayuda && <span className="av-ayuda">{ayuda}</span>}
+    </label>
+  );
+}
 
 const NOMBRE_TIPO: Record<string, string> = {
   ventas: 'Pedidos (ventas)',
@@ -33,11 +83,11 @@ const NOMBRE_TIPO: Record<string, string> = {
 
 function duracionTexto(f: ParametrosCorrida): string {
   if (f.escenario === 'SIMULACION_5D') {
-    return `${f.diasSimulacion} días simulados (fija) · ejecución acelerada en ${f.duracionObjetivoMin} min reales (rango exigido: 30 a 60 min)`;
+    return `${f.diasSimulacion} días simulados en ${f.duracionObjetivoMin} min reales`;
   }
-  if (f.escenario === 'TIEMPO_REAL') return 'Sin fin automático (tiempo real 1:1, sin aceleración) · se detiene con «Detener corrida»';
+  if (f.escenario === 'TIEMPO_REAL') return 'Tiempo real (1:1), hasta «Detener corrida»';
   const minPorDia = (24 * 60) / f.factorAceleracionColapso;
-  return `Sin límite superior de tiempo · se detiene sola al detectar el colapso logístico (1 día simulado ≈ ${minPorDia.toFixed(1)} min reales)`;
+  return `Hasta detectar el colapso · 1 día simulado ≈ ${minPorDia.toFixed(1)} min reales`;
 }
 
 /** V-1 · Parametros de la corrida: todo lo que determina el resultado, para que sea reproducible y auditable. */
@@ -50,6 +100,20 @@ export default function PantallaParametros(props: Props) {
   const setAlg = (k: string, v: number) => setForm({ ...form, parametrosAlgoritmo: { ...form.parametrosAlgoritmo, [k]: v } });
   const algoritmo = config.algoritmos.find((a) => a.id === form.algoritmo);
   const archivosValidos = !!archivos && archivos.every((a) => a.valido);
+
+  // cambios de turno: se edita como texto libre y solo se guarda cuando hay 3 horas validas (antes revertia al escribir)
+  const [textoTurnos, setTextoTurnos] = useState(op.horasCambioTurno.join(', '));
+  const [turnoValido, setTurnoValido] = useState(true);
+  useEffect(() => {
+    setTextoTurnos((t) => (sonHoras(t, op.horasCambioTurno) ? t : op.horasCambioTurno.join(', ')));
+  }, [op.horasCambioTurno]);
+  const cambiarTurnos = (texto: string) => {
+    setTextoTurnos(texto);
+    const horas = texto.split(',').map((x) => x.trim()).filter((x) => x !== '').map(Number);
+    const ok = horas.length === 3 && horas.every((x) => Number.isInteger(x) && x >= 0 && x < 24);
+    setTurnoValido(ok);
+    if (ok) setForm({ ...form, operacion: { ...op, horasCambioTurno: horas } });
+  };
 
   const cambiarUmbral = (verde: number, ambar: number) => {
     const v = Math.max(0, Math.min(100, verde));
@@ -119,15 +183,22 @@ export default function PantallaParametros(props: Props) {
             </ul>
           )}
           <p className="hint" style={{ marginTop: 10 }}>
-            <b>Caso del 30 de septiembre:</b> el periodo de 5 días cruza de septiembre a octubre, así que en «Pedidos» y en «Bloqueos»
-            puede subir 2 archivos a la vez, uno por mes (p. ej. <code>ventas.202609.txt</code> y <code>ventas.202610.txt</code>). Si el
-            nombre no indica el mes, el primero (por orden alfabético) se usa para el mes de la fecha de inicio y el segundo para el mes siguiente.
+            Datos publicados disponibles: {config.datosDisponibles.primerMes} a {config.datosDisponibles.ultimoMes}.
           </p>
-          <p className="hint" style={{ marginTop: 10 }}>
-            Formatos: ventas <code>##d##h##m:x,y,cliente,cantidad,plazo</code> · bloqueos <code>##d##h##m-##d##h##m:x1,y1,…</code> ·
-            mantenimiento <code>aaaammdd:TTNN</code> · averías <code>##d##h##m:TTNN:tipo</code>. Datos publicados disponibles:
-            {' '}{config.datosDisponibles.primerMes} a {config.datosDisponibles.ultimoMes}.
-          </p>
+          <details className="ayuda-plegable">
+            <summary>Formatos de archivo y periodos que cruzan de mes</summary>
+            <dl className="formatos">
+              <dt>Pedidos (ventas)</dt><dd><code>##d##h##m:x,y,cliente,cantidad,plazo</code></dd>
+              <dt>Bloqueos</dt><dd><code>##d##h##m-##d##h##m:x1,y1,…</code></dd>
+              <dt>Mantenimiento</dt><dd><code>aaaammdd:TTNN</code></dd>
+              <dt>Averías</dt><dd><code>##d##h##m:TTNN:tipo</code></dd>
+            </dl>
+            <p className="hint">
+              Si el periodo cruza de mes (p. ej. desde el 30 de septiembre), en Pedidos y Bloqueos se suben 2 archivos a la vez, uno por
+              mes (<code>ventas.202609.txt</code> y <code>ventas.202610.txt</code>). Si el nombre no indica el mes, el primero en orden
+              alfabético se usa para el mes de inicio y el segundo para el siguiente.
+            </p>
+          </details>
         </div>
 
         <div className="card">
@@ -151,34 +222,52 @@ export default function PantallaParametros(props: Props) {
           </label>
           <label>Tipos de entrega incluidos
             <div className="tipos-entrega">
-              {config.tiposEntrega.map((t) => <span className="tag" key={t.id}>{t.etiqueta} · {t.plazoHoras} h de plazo</span>)}
-              <span className="tag">Pedido del archivo de ventas · plazo del registro</span>
+              {config.tiposEntrega.map((t) => (
+                <span className="tag" key={t.id}>{/\d\s*h\b/.test(t.etiqueta) ? t.etiqueta : `${t.etiqueta} · ${t.plazoHoras} h`}</span>
+              ))}
+              <span className="tag">Archivo de ventas · plazo del registro</span>
             </div>
           </label>
         </div>
 
         <div className="card">
-          <h3>Umbrales de semaforización (% de holgura de plazo restante)</h3>
-          <div className="umbral-row">
-            <label>Verde — a tiempo<br />holgura ≥
-              <input type="number" min={0} max={100} value={form.umbrales.verde} onChange={(e) => cambiarUmbral(Number(e.target.value), form.umbrales.ambar)} />%
-            </label>
-            <label>Ámbar — en riesgo<br />holgura ≥
-              <input type="number" min={0} max={100} value={form.umbrales.ambar} onChange={(e) => cambiarUmbral(form.umbrales.verde, Number(e.target.value))} />%
-            </label>
-            <label>Rojo — vencido / crítico<br />holgura &lt;
-              <input type="number" min={0} max={100} value={form.umbrales.ambar} onChange={(e) => cambiarUmbral(form.umbrales.verde, Number(e.target.value))} />%
-            </label>
-          </div>
-          <p className="hint" style={{ marginTop: 8 }}>
-            La semaforización se calcula sobre el % de holgura de plazo restante, nunca sobre horas absolutas; en los almacenes
-            intermedios, sobre el % de stock. El límite inferior de «ámbar» y el de «rojo» son el mismo valor por definición.
-            {bloqueado ? ' Los cambios se aplican a la corrida en curso desde la siguiente actualización del mapa.' : ''}
+          <h3>Umbrales del semáforo</h3>
+          <p className="hint" style={{ margin: '-6px 0 10px' }}>
+            Sobre el % de holgura de plazo restante de cada pedido (y el % de stock en los almacenes intermedios).
+            {bloqueado ? ' Se pueden ajustar con la corrida en curso.' : ''}
           </p>
+          <div className="umbrales">
+            <div className="umbral-fila">
+              <span className="umbral-color" style={{ background: 'var(--green)' }} />
+              <span className="umbral-nombre">Verde<small>A tiempo</small></span>
+              <span className="umbral-regla">holgura ≥</span>
+              <span className="av-control umbral-valor">
+                <input type="number" min={0} max={100} value={form.umbrales.verde} aria-label="Umbral verde (%)"
+                  onChange={(e) => cambiarUmbral(Number(e.target.value), form.umbrales.ambar)} />
+                <span className="av-unidad">%</span>
+              </span>
+            </div>
+            <div className="umbral-fila">
+              <span className="umbral-color" style={{ background: 'var(--amber)' }} />
+              <span className="umbral-nombre">Ámbar<small>En riesgo</small></span>
+              <span className="umbral-regla">holgura ≥</span>
+              <span className="av-control umbral-valor">
+                <input type="number" min={0} max={100} value={form.umbrales.ambar} aria-label="Umbral ámbar (%)"
+                  onChange={(e) => cambiarUmbral(form.umbrales.verde, Number(e.target.value))} />
+                <span className="av-unidad">%</span>
+              </span>
+            </div>
+            <div className="umbral-fila">
+              <span className="umbral-color" style={{ background: 'var(--red)' }} />
+              <span className="umbral-nombre">Rojo<small>Vencido o crítico</small></span>
+              <span className="umbral-regla">holgura &lt;</span>
+              <span className="umbral-fijo">{form.umbrales.ambar} %<small>límite del ámbar</small></span>
+            </div>
+          </div>
         </div>
 
         <div className="card">
-          <h3>Flota disponible <span className="hint">(P17 · códigos TTNN de la P18)</span></h3>
+          <h3>Flota disponible <span className="hint">(códigos TTNN)</span></h3>
           <table className="table-readonly">
             <thead><tr><th>Tipo</th><th>Unidades</th><th>Capacidad</th><th>Costo</th><th>Velocidad</th></tr></thead>
             <tbody>
@@ -187,7 +276,7 @@ export default function PantallaParametros(props: Props) {
               <tr><td><span className="fleet-letter">B</span>Bicicleta</td><td>{op.cantidadBicicletas} (TB01–TB{String(op.cantidadBicicletas).padStart(2, '0')})</td><td>{op.capacidadBicicleta} paquetes</td><td>S/ {op.costoKmBicicleta.toFixed(2)} / km</td><td>{op.velocidadBicicleta} km/h</td></tr>
             </tbody>
           </table>
-          <p className="hint" style={{ marginTop: 8 }}>Todas las unidades salen del almacén central al inicio de cualquier escenario (P10). Se editan en «Parámetros avanzados».</p>
+          <p className="hint" style={{ marginTop: 8 }}>Todas las unidades salen del almacén central al inicio de cualquier escenario. Se editan en «Parámetros avanzados».</p>
         </div>
 
         <div className="card">
@@ -208,84 +297,136 @@ export default function PantallaParametros(props: Props) {
           <ul className="turnos-list">
             {config.turnos.map((t) => <li key={t.rango}><b>{t.rango}</b> · alimentación {t.alimentacion}</li>)}
           </ul>
-          <p className="hint" style={{ marginTop: 8 }}>{config.reglaAlimentacion} En el cambio de turno solo cambia el conductor; la unidad sigue operando (P12).</p>
+          <p className="hint" style={{ marginTop: 8 }}>{config.reglaAlimentacion} En el cambio de turno solo cambia el conductor; la unidad sigue operando.</p>
         </div>
 
         <div className="card span2">
           <details className="avanzado">
-            <summary>Parámetros avanzados (velocidades, costos, flota, planificación, colapso y algoritmo)</summary>
-            <div className="subtitulo">Escenario</div>
-            <div className="fila-campos">
-              <label>Duración objetivo del periodo (min reales, 30–60)
-                <input type="number" min={30} max={60} value={form.duracionObjetivoMin} disabled={bloqueado} onChange={(e) => set('duracionObjetivoMin', Number(e.target.value))} />
-              </label>
-              <label>Días del periodo
-                <input type="number" min={1} max={30} value={form.diasSimulacion} disabled={bloqueado} onChange={(e) => set('diasSimulacion', Number(e.target.value))} />
-              </label>
-              <label>Aceleración del colapso (h simuladas por h real)
-                <input type="number" min={1} max={20000} value={form.factorAceleracionColapso} disabled={bloqueado} onChange={(e) => set('factorAceleracionColapso', Number(e.target.value))} />
-              </label>
-              <label>Ventana de planificación (min)
-                <input type="number" min={5} max={240} value={form.ventanaPlanificacionMin} disabled={bloqueado} onChange={(e) => set('ventanaPlanificacionMin', Number(e.target.value))} />
-              </label>
-              <label>Colapso: pedidos incumplidos simultáneos
-                <input type="number" min={1} value={form.umbralColapsoVencidos} disabled={bloqueado} onChange={(e) => set('umbralColapsoVencidos', Number(e.target.value))} />
-              </label>
-              <label>Colapso: pedidos sin unidad que no pueden esperar
-                <input type="number" min={1} value={form.umbralColapsoBacklog} disabled={bloqueado} onChange={(e) => set('umbralColapsoBacklog', Number(e.target.value))} />
-              </label>
-              <label>Averías programadas por día
-                <input type="number" min={0} max={20} step={0.1} value={form.averiasPorDia} disabled={bloqueado || !form.generarAverias} onChange={(e) => set('averiasPorDia', Number(e.target.value))} />
-              </label>
-              <label style={{ alignSelf: 'end' }}>
-                <input type="checkbox" checked={form.generarAverias} disabled={bloqueado} onChange={(e) => set('generarAverias', e.target.checked)} />Generar averías con la semilla
-              </label>
-            </div>
-            <div className="subtitulo">Velocidades (km/h) y costos (S/ por km) · D2, D3 · las velocidades se pueden cambiar en caliente (P6, P16)</div>
-            <div className="fila-campos">
-              {([['velocidadAuto', 'Velocidad auto'], ['velocidadMoto', 'Velocidad moto'], ['velocidadBicicleta', 'Velocidad bicicleta'],
-                ['costoKmAuto', 'Costo auto'], ['costoKmMoto', 'Costo moto'], ['costoKmBicicleta', 'Costo bicicleta']] as const).map(([k, l]) => (
-                <label key={k}>{l}<input type="number" min={0} step={0.5} value={Number(op[k])} disabled={bloqueado && !CAMPOS_VELOCIDAD.has(k)}
-                  onChange={(e) => setOp(k, Number(e.target.value))} /></label>
-              ))}
-            </div>
-            {bloqueado && (
-              <div className="start-bar" style={{ marginTop: 4 }}>
-                <button className="btn btn-sm" disabled={!(op.velocidadAuto > 0 && op.velocidadMoto > 0 && op.velocidadBicicleta > 0)}
-                  onClick={() => props.onVelocidadesEnVivo(op.velocidadAuto, op.velocidadMoto, op.velocidadBicicleta)}>
-                  Aplicar velocidades a la corrida en curso
-                </button>
-                <span className="hint">Aplican desde la siguiente ventana de planificación, también a las unidades que ya están en ruta (P17).</span>
-              </div>
-            )}
-            <div className="subtitulo">Flota y almacenes · D1</div>
-            <div className="fila-campos">
-              {([['cantidadAutos', 'Autos'], ['cantidadMotos', 'Motos'], ['cantidadBicicletas', 'Bicicletas'],
-                ['capacidadAuto', 'Capacidad auto'], ['capacidadMoto', 'Capacidad moto'], ['capacidadBicicleta', 'Capacidad bicicleta'],
-                ['capacidadAlmacenIntermedio', 'Capacidad de cada intermedio']] as const).map(([k, l]) => (
-                <label key={k}>{l}<input type="number" min={0} value={Number(op[k])} disabled={bloqueado} onChange={(e) => setOp(k, Number(e.target.value))} /></label>
-              ))}
-            </div>
-            <div className="subtitulo">Plazos de entrega (h) y tiempos · D10, D11</div>
-            <div className="fila-campos">
-              {([['plazoRegularH', 'Regular'], ['plazoPriorizada4H', 'Priorizada 4 h'], ['plazoPriorizada8H', 'Priorizada 8 h'],
-                ['plazoPriorizada12H', 'Priorizada 12 h'], ['plazoPriorizada18H', 'Priorizada 18 h'], ['tiempoServicioH', 'Entrega al cliente (h)'],
-                ['duracionAlimentacionH', 'Alimentación (h)']] as const).map(([k, l]) => (
-                <label key={k}>{l}<input type="number" min={0} step={0.5} value={Number(op[k])} disabled={bloqueado} onChange={(e) => setOp(k, Number(e.target.value))} /></label>
-              ))}
-              <label>Cambios de turno (h, separadas por coma)
-                <input value={op.horasCambioTurno.join(', ')} disabled={bloqueado}
-                  onChange={(e) => {
-                    const horas = e.target.value.split(',').map((x) => Number(x.trim())).filter((x) => Number.isFinite(x) && x >= 0 && x < 24);
-                    if (horas.length === 3) setForm({ ...form, operacion: { ...op, horasCambioTurno: horas } });
-                  }} />
-              </label>
-            </div>
-            <div className="subtitulo">Parámetros del algoritmo · {algoritmo?.etiqueta}</div>
-            <div className="fila-campos">
-              {Object.entries(form.parametrosAlgoritmo).map(([k, v]) => (
-                <label key={k}>{k}<input type="number" step="any" value={v} disabled={bloqueado} onChange={(e) => setAlg(k, Number(e.target.value))} /></label>
-              ))}
+            <summary>Parámetros avanzados</summary>
+            <p className="hint av-intro">
+              Valores por defecto según el enunciado y Preguntas y Respuestas. Quedan fijos al iniciar la corrida, salvo las
+              velocidades por tipo de unidad, que se pueden cambiar en caliente.
+            </p>
+            <div className="av-grid">
+              {/* 1. Ritmo y planificacion */}
+              <fieldset className="av-bloque">
+                <legend>Ritmo de la simulación y planificación</legend>
+                <div className="av-campos">
+                  <Campo etiqueta="Duración del periodo de 5 días" unidad="min reales" ayuda={`30 a 60 min · ×1 = ${formatoFactor(form.diasSimulacion * 24 / (form.duracionObjetivoMin / 60))} h simuladas por h real`}>
+                    <input type="number" min={30} max={60} value={form.duracionObjetivoMin} disabled={bloqueado} onChange={(e) => set('duracionObjetivoMin', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Días del periodo" unidad="días" ayuda="El enunciado fija 5 días">
+                    <input type="number" min={1} max={30} value={form.diasSimulacion} disabled={bloqueado} onChange={(e) => set('diasSimulacion', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Aceleración del colapso" unidad="h sim. / h real" ayuda={`1 a 20 000 · 1 día simulado ≈ ${((24 * 60) / Math.max(1, form.factorAceleracionColapso)).toFixed(1)} min reales`}>
+                    <input type="number" min={1} max={20000} value={form.factorAceleracionColapso} disabled={bloqueado} onChange={(e) => set('factorAceleracionColapso', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Ventana de planificación (Sa)" unidad="min" ayuda="5 a 240 min simulados">
+                    <input type="number" min={5} max={240} value={form.ventanaPlanificacionMin} disabled={bloqueado} onChange={(e) => set('ventanaPlanificacionMin', Number(e.target.value))} />
+                  </Campo>
+                </div>
+              </fieldset>
+
+              {/* 2. Colapso y averias */}
+              <fieldset className="av-bloque">
+                <legend>Colapso logístico y averías</legend>
+                <div className="av-campos">
+                  <Campo etiqueta="Pedidos incumplidos a la vez" unidad="pedidos" ayuda="Se declara el colapso al llegar a este número">
+                    <input type="number" min={1} value={form.umbralColapsoVencidos} disabled={bloqueado} onChange={(e) => set('umbralColapsoVencidos', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Pedidos sin unidad que no pueden esperar" unidad="pedidos" ayuda="Otra condición de colapso">
+                    <input type="number" min={1} value={form.umbralColapsoBacklog} disabled={bloqueado} onChange={(e) => set('umbralColapsoBacklog', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Averías aleatorias por día" unidad="por día" ayuda={form.generarAverias ? 'Se generan con la semilla (reproducibles)' : 'Desactivadas'}>
+                    <input type="number" min={0} max={20} step={0.1} value={form.averiasPorDia} disabled={bloqueado || !form.generarAverias} onChange={(e) => set('averiasPorDia', Number(e.target.value))} />
+                  </Campo>
+                  <div className="av-campo av-check">
+                    <label className="av-switch">
+                      <input type="checkbox" checked={form.generarAverias} disabled={bloqueado} onChange={(e) => set('generarAverias', e.target.checked)} />
+                      Generar averías aleatorias con la semilla
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* 3. Flota: una fila por tipo de unidad */}
+              <fieldset className="av-bloque span2">
+                <legend>Flota por tipo de unidad</legend>
+                <table className="av-tabla">
+                  <thead>
+                    <tr>
+                      <th>Tipo</th><th>Unidades</th><th>Capacidad <span>paquetes</span></th>
+                      <th>Velocidad <span>km/h{bloqueado ? ' · en caliente' : ''}</span></th><th>Costo <span>S/ por km</span></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {FLOTA.map(([tipo, letra, cant, cap, vel, costo]) => (
+                      <tr key={tipo}>
+                        <td><span className="fleet-letter">{letra}</span>{tipo}</td>
+                        <td><input type="number" min={0} value={Number(op[cant])} disabled={bloqueado} onChange={(e) => setOp(cant, Number(e.target.value))} aria-label={`Unidades de ${tipo}`} /></td>
+                        <td><input type="number" min={1} value={Number(op[cap])} disabled={bloqueado} onChange={(e) => setOp(cap, Number(e.target.value))} aria-label={`Capacidad de ${tipo}`} /></td>
+                        <td><input type="number" min={0} step={0.5} value={Number(op[vel])} onChange={(e) => setOp(vel, Number(e.target.value))} aria-label={`Velocidad de ${tipo}`} className={bloqueado ? 'en-caliente' : undefined} /></td>
+                        <td><input type="number" min={0} step={0.5} value={Number(op[costo])} disabled={bloqueado} onChange={(e) => setOp(costo, Number(e.target.value))} aria-label={`Costo por km de ${tipo}`} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {bloqueado && (
+                  <div className="av-accion">
+                    <button className="btn btn-sm btn-primary" disabled={!(op.velocidadAuto > 0 && op.velocidadMoto > 0 && op.velocidadBicicleta > 0)}
+                      onClick={() => props.onVelocidadesEnVivo(op.velocidadAuto, op.velocidadMoto, op.velocidadBicicleta)}>
+                      Aplicar velocidades a la corrida en curso
+                    </button>
+                    <span className="hint">Aplican desde la siguiente ventana de planificación, también a las unidades en ruta.</span>
+                  </div>
+                )}
+              </fieldset>
+
+              {/* 4. Plazos */}
+              <fieldset className="av-bloque">
+                <legend>Plazos de entrega</legend>
+                <div className="av-campos">
+                  {PLAZOS.map(([k, l]) => (
+                    <Campo key={k} etiqueta={l} unidad="h">
+                      <input type="number" min={0} step={0.5} value={Number(op[k])} disabled={bloqueado} onChange={(e) => setOp(k, Number(e.target.value))} />
+                    </Campo>
+                  ))}
+                </div>
+              </fieldset>
+
+              {/* 5. Operacion */}
+              <fieldset className="av-bloque">
+                <legend>Operación y almacenes</legend>
+                <div className="av-campos">
+                  <Campo etiqueta="Entrega al cliente" unidad="h" ayuda="Acondicionamiento por cada entrega">
+                    <input type="number" min={0} step={0.5} value={op.tiempoServicioH} disabled={bloqueado} onChange={(e) => setOp('tiempoServicioH', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Pausa de alimentación" unidad="h" ayuda="Una por turno">
+                    <input type="number" min={0} step={0.5} value={op.duracionAlimentacionH} disabled={bloqueado} onChange={(e) => setOp('duracionAlimentacionH', Number(e.target.value))} />
+                  </Campo>
+                  <Campo etiqueta="Cambios de turno" unidad="horas" ayuda={turnoValido ? '3 horas del día (0–23), separadas por coma' : 'Escriba 3 horas entre 0 y 23, p. ej. 7, 15, 23'} error={!turnoValido}>
+                    <input value={textoTurnos} disabled={bloqueado} onChange={(e) => cambiarTurnos(e.target.value)} />
+                  </Campo>
+                  <Campo etiqueta="Capacidad de cada intermedio" unidad="paquetes" ayuda="El central no tiene límite">
+                    <input type="number" min={1} value={op.capacidadAlmacenIntermedio} disabled={bloqueado} onChange={(e) => setOp('capacidadAlmacenIntermedio', Number(e.target.value))} />
+                  </Campo>
+                </div>
+              </fieldset>
+
+              {/* 6. Algoritmo */}
+              <fieldset className="av-bloque span2">
+                <legend>Parámetros del algoritmo · {algoritmo?.etiqueta}</legend>
+                <div className="av-campos av-campos-5">
+                  {Object.entries(form.parametrosAlgoritmo).map(([k, v]) => {
+                    const d = PARAM_ALGORITMO[k];
+                    return (
+                      <Campo key={k} etiqueta={d?.[0] ?? k} ayuda={d?.[1]}>
+                        <input type="number" step="any" value={v} disabled={bloqueado} onChange={(e) => setAlg(k, Number(e.target.value))} />
+                      </Campo>
+                    );
+                  })}
+                </div>
+              </fieldset>
             </div>
           </details>
         </div>

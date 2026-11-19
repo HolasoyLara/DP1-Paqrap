@@ -260,7 +260,7 @@ export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar
         ]} />
         {enCurso && (
           <div className="acciones-modal">
-            <span className="hint">Reportar avería (D7):</span>
+            <span className="hint">Reportar avería:</span>
             {[1, 2, 3].map((t) => (
               <button key={t} className="btn btn-sm btn-peligro" disabled={ocupado} onClick={() => reportarAveria(t)}>Tipo {t}</button>
             ))}
@@ -355,7 +355,7 @@ export default function ModalDetalle({ seleccion, enCurso, diaADia, verde, ambar
               <>
                 <button className="btn btn-sm btn-ghost" onClick={() => setEdicion({ cantidad: p.cantidad, tipo: tipoDesdeEtiqueta(p.tipoEntrega), observaciones: p.observaciones ?? '' })}>Editar pedido</button>
                 <button className="btn btn-sm btn-peligro" disabled={ocupado} onClick={cancelar}>Cancelar pedido</button>
-                <span className="hint">Solo antes de que salga del almacén (A6, A7).</span>
+                <span className="hint">Solo antes de que salga del almacén.</span>
               </>
             ) : (
               <div className="fila-campos" style={{ width: '100%' }}>

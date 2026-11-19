@@ -48,7 +48,7 @@ function Kpi({ etiqueta, valor, sub }: { etiqueta: string; valor: string; sub?: 
   );
 }
 
-/** V-3 · Cierre del periodo y reportes del Modulo D (D15-D25), con el historial de corridas (D24). */
+/** V-3 · Cierre del periodo y reportes del Modulo D (D15-D25), con el historial de corridas. */
 export default function PantallaCierre({ estado, cierreRecibido }: Props) {
   const [cierre, setCierre] = useState<CierreCorrida | null>(cierreRecibido);
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +151,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
             <span>entregados fuera de plazo: <b>{r.entregadosTarde}</b></span>
             <span>en curso al cierre: <b>{r.enCurso}</b></span>
             <span>incumplidos sin entregar: <b>{r.incumplidosSinEntregar}</b></span>
-            <span>pedidos divididos (P13): <b>{r.pedidosDivididos}</b></span>
+            <span>pedidos divididos: <b>{r.pedidosDivididos}</b></span>
           </div>
 
           {esColapso && (
@@ -191,7 +191,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
 
           <div className="grid-2col" style={{ marginTop: 18 }}>
             <div className="card">
-              <h3>Kilometraje y costo por tipo de vehículo (D16, D17)</h3>
+              <h3>Kilometraje y costo por tipo de vehículo</h3>
               <table className="table-readonly">
                 <thead><tr><th>Tipo</th><th>Unidades</th><th>Rutas</th><th>Km</th><th>Costo</th></tr></thead>
                 <tbody>
@@ -202,7 +202,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
               </table>
             </div>
             <div className="card">
-              <h3>Verificación de la política de entrega (D25)</h3>
+              <h3>Verificación de la política de entrega</h3>
               <span className={'semaforo-pill ' + (cierre.verificacion.politicaCumplida ? 'semaforo-verde' : 'semaforo-rojo')}>
                 {cierre.verificacion.politicaCumplida ? 'Cumple la política' : 'No cumple la política'}
               </span>
@@ -212,7 +212,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
               )}
             </div>
             <div className="card">
-              <h3>Incidencias (D19)</h3>
+              <h3>Incidencias</h3>
               <p className="hint">
                 Bloqueos programados en la corrida: <b>{cierre.incidencias.bloqueosProgramados}</b> · bloqueos manuales:{' '}
                 <b>{cierre.incidencias.bloqueosManuales}</b> · averías: <b>{cierre.incidencias.averias}</b>
@@ -232,7 +232,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
               </p>
             </div>
             <div className="card">
-              <h3>Detalle de la ejecución (D24)</h3>
+              <h3>Detalle de la ejecución</h3>
               <table className="table-readonly">
                 <tbody>
                   {Object.entries(cierre.parametros).filter(([k]) => k !== 'parametrosAlgoritmo').map(([k, v]) => (
@@ -285,7 +285,7 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
             </>
           )}
 
-          <h3 style={{ marginTop: 22 }}>Utilización de la flota (D18)</h3>
+          <h3 style={{ marginTop: 22 }}>Utilización de la flota</h3>
           <div className="tabla-scroll" style={{ maxHeight: 320 }}>
             <table className="daily-table">
               <thead>
@@ -305,13 +305,13 @@ export default function PantallaCierre({ estado, cierreRecibido }: Props) {
 
           <div className="start-bar">
             <a className="btn btn-primary" href={deHistorial ? enlaces.corridaCsv(cierre.idCorrida) : enlaces.cierreCsv()}>Exportar reporte (CSV / hoja de cálculo)</a>
-            <span className="hint">D22: el CSV se abre directamente en Excel.</span>
+            <span className="hint">el CSV se abre directamente en Excel.</span>
           </div>
         </>
       )}
 
       <div className="separador" />
-      <h3>Historial de corridas (D24)</h3>
+      <h3>Historial de corridas</h3>
       {historial.length === 0 ? (
         <p className="empty-hint">Todavía no hay corridas registradas.</p>
       ) : (

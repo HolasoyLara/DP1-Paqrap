@@ -12,7 +12,7 @@ import MapaOperacion, {
 } from './MapaOperacion';
 import Tooltip, { type TooltipApi } from './Tooltip';
 import { IconoMini } from './Iconos';
-import PanelListas, { FiltroSemaforo, type PestanaPanel } from './PanelListas';
+import PanelListas, { type PestanaPanel } from './PanelListas';
 
 /** Rango de ocupacion de cada color con los umbrales vigentes (verde/ambar se aplican al espacio libre). */
 function RANGO_OCUPACION(s: SemaforoOcupacion, verde: number, ambar: number): string {
@@ -46,12 +46,31 @@ const TIPOS_RAPIDOS: [string, string][] = [
   ['PRIORIZADA_18H', 'Priorizada · 18 h'],
 ];
 
-function Kpi({ etiqueta, valor, sub, sem }: { etiqueta: string; valor: string; sub: string; sem?: 'verde' | 'ambar' | 'rojo' | null }) {
+const COLORES_SEM: SemaforoOcupacion[] = ['vacio', 'verde', 'ambar', 'rojo'];
+
+/** Tarjeta de metrica: etiqueta, valor en una sola linea y detalle; el semaforo es un punto junto a la etiqueta. */
+function Kpi({ etiqueta, valor, sub, sem }: { etiqueta: string; valor: string; sub: string; sem?: SemaforoOcupacion | 'verde' | 'ambar' | 'rojo' | null }) {
   return (
-    <div className={'kpi' + (sem ? ' kpi-border-' + sem : '')}>
-      <div className="kpi-label">{sem && <span className={'kpi-sem-dot ' + sem} />}{etiqueta}</div>
-      <div className="kpi-value">{valor}</div>
-      <div className="kpi-sub">{sub}</div>
+    <div className="kpi">
+      <div className="kpi-label" title={etiqueta}>
+        {sem && <span className="kpi-sem-dot" style={{ background: COLOR_OCUPACION[sem as SemaforoOcupacion], borderColor: sem === 'vacio' ? BORDE_VACIO : 'transparent' }} />}
+        <span className="kpi-label-texto">{etiqueta}</span>
+      </div>
+      <div className="kpi-value" title={valor}>{valor}</div>
+      <div className="kpi-sub" title={sub}>{sub}</div>
+    </div>
+  );
+}
+
+/** Panel flotante del mapa con cabecera (titulo y cerrar), igual para Filtros, Leyenda y Buscar. */
+function PanelFlotante({ titulo, className, onCerrar, children }: { titulo: string; className: string; onCerrar: () => void; children: React.ReactNode }) {
+  return (
+    <div className={'panel-flot ' + className} onPointerDown={(e) => e.stopPropagation()} role="dialog" aria-label={titulo}>
+      <div className="pf-cab">
+        <h4>{titulo}</h4>
+        <button type="button" className="pf-cerrar" onClick={onCerrar} aria-label={`Cerrar ${titulo.toLowerCase()}`}>×</button>
+      </div>
+      <div className="pf-cuerpo">{children}</div>
     </div>
   );
 }
@@ -164,7 +183,7 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
   const semCumplimiento = semaforo(k.cumplimiento, 95, 85);
   return (
     <section className="panorama">
-      <div className={'mapa-pantalla' + (verPanel ? ' con-panel' : '')}>
+      <div className={'mapa-pantalla' + (verPanel ? ' con-panel' : '') + (metricas ? ' con-metricas' : '')}>
         <MapaOperacion
           estado={estado}
           minutoAhora={minutoAhora}
@@ -212,72 +231,111 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
         )}
 
         {verBuscar && (
-          <div className="panel-flot panel-buscar" onPointerDown={(e) => e.stopPropagation()}>
-            <label>Buscar pedido por ID
-              <div className="track-row">
-                <input value={busqueda} placeholder="ej. PV2609-0001" autoFocus onChange={(e) => setBusqueda(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); buscar(); } }} />
-                <button className="btn btn-ghost" type="button" onClick={buscar}>Buscar</button>
-              </div>
-            </label>
-            {errorBusqueda && <span className="error-texto">{errorBusqueda}</span>}
-          </div>
+          <PanelFlotante titulo="Buscar pedido" className="panel-buscar" onCerrar={() => setVerBuscar(false)}>
+            <div className="track-row">
+              <input value={busqueda} placeholder="Código del pedido, p. ej. PV2609-0001" autoFocus aria-label="Código del pedido"
+                onChange={(e) => setBusqueda(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); buscar(); } }} />
+              <button className="btn btn-sm btn-primary" type="button" onClick={buscar}>Buscar</button>
+            </div>
+            {errorBusqueda && <p className="error-texto" style={{ margin: '8px 0 0' }}>{errorBusqueda}</p>}
+          </PanelFlotante>
         )}
 
         {verFiltros && (
-          <div className="panel-flot panel-filtros" onPointerDown={(e) => e.stopPropagation()}>
-            <label>Zona visible <span className="hint">(solo en este dispositivo)</span>
-              <select value={zona} onChange={(e) => setZona(e.target.value)}>
+          <PanelFlotante titulo="Filtros del mapa" className="panel-filtros" onCerrar={() => setVerFiltros(false)}>
+            <div className="pf-seccion">
+              <div className="pf-subtitulo">Zona visible <span>· solo en este dispositivo</span></div>
+              <select value={zona} onChange={(e) => setZona(e.target.value)} aria-label="Zona visible">
                 <option value="full">Vista completa</option>
                 <option value="noroeste">Cuadrante noroeste</option>
                 <option value="noreste">Cuadrante noreste</option>
                 <option value="suroeste">Cuadrante suroeste</option>
                 <option value="sureste">Cuadrante sureste</option>
               </select>
-            </label>
-            <label><input type="checkbox" checked={filtros.soloCriticos} onChange={(e) => setFiltros({ ...filtros, soloCriticos: e.target.checked })} />Solo pedidos en riesgo o críticos</label>
-            <label><input type="checkbox" checked={filtros.mostrarPedidos} onChange={(e) => setFiltros({ ...filtros, mostrarPedidos: e.target.checked })} />Mostrar pedidos</label>
-            <label><input type="checkbox" checked={filtros.mostrarBloqueos} onChange={(e) => setFiltros({ ...filtros, mostrarBloqueos: e.target.checked })} />Mostrar calles bloqueadas</label>
-            <label><input type="checkbox" checked={filtros.unidadesEnAlmacen} onChange={(e) => setFiltros({ ...filtros, unidadesEnAlmacen: e.target.checked })} />Mostrar unidades en almacén</label>
-            <div className="subtitulo" style={{ marginTop: 4 }}>Semáforo de ocupación</div>
-            <FiltroSemaforo titulo="Unidades" valor={filtros.semaforoUT} onCambio={(v) => setFiltros({ ...filtros, semaforoUT: v })} />
-            <FiltroSemaforo titulo="Almacenes" valor={filtros.semaforoAlmacen} onCambio={(v) => setFiltros({ ...filtros, semaforoAlmacen: v })} />
-            <div className="subtitulo" style={{ marginTop: 4 }}>Tipos de vehículo</div>
-            {(['AUTO', 'MOTO', 'BICICLETA'] as const).map((t) => (
-              <label key={t}><input type="checkbox" checked={filtros.tipos[t]} onChange={(e) => setFiltros({ ...filtros, tipos: { ...filtros.tipos, [t]: e.target.checked } })} />
-                {t === 'AUTO' ? 'Autos' : t === 'MOTO' ? 'Motos' : 'Bicicletas'}</label>
-            ))}
-            <label>Rutas
-              <select value={filtros.rutas} onChange={(e) => setFiltros({ ...filtros, rutas: e.target.value as Filtros['rutas'] })}>
-                <option value="todas">Todas (tenues) y la seleccionada resaltada</option>
-                <option value="seleccionada">Solo la del vehículo seleccionado</option>
+            </div>
+            <div className="pf-seccion">
+              <div className="pf-subtitulo">Elementos visibles</div>
+              <div className="pf-checks">
+                <label><input type="checkbox" checked={filtros.mostrarPedidos} onChange={(e) => setFiltros({ ...filtros, mostrarPedidos: e.target.checked })} />Pedidos</label>
+                <label><input type="checkbox" checked={filtros.soloCriticos} onChange={(e) => setFiltros({ ...filtros, soloCriticos: e.target.checked })} />Solo en riesgo o críticos</label>
+                <label><input type="checkbox" checked={filtros.mostrarBloqueos} onChange={(e) => setFiltros({ ...filtros, mostrarBloqueos: e.target.checked })} />Calles bloqueadas</label>
+                <label><input type="checkbox" checked={filtros.unidadesEnAlmacen} onChange={(e) => setFiltros({ ...filtros, unidadesEnAlmacen: e.target.checked })} />Unidades en almacén</label>
+              </div>
+            </div>
+            <div className="pf-seccion">
+              <div className="pf-subtitulo">Tipo de unidad</div>
+              <div className="pf-checks pf-checks-3">
+                {(['AUTO', 'MOTO', 'BICICLETA'] as const).map((t) => (
+                  <label key={t}><input type="checkbox" checked={filtros.tipos[t]} onChange={(e) => setFiltros({ ...filtros, tipos: { ...filtros.tipos, [t]: e.target.checked } })} />
+                    {t === 'AUTO' ? 'Autos' : t === 'MOTO' ? 'Motos' : 'Bicicletas'}</label>
+                ))}
+              </div>
+            </div>
+            <div className="pf-seccion">
+              <div className="pf-subtitulo">Semáforo de ocupación</div>
+              <table className="pf-semaforo">
+                <thead>
+                  <tr>
+                    <th />
+                    {COLORES_SEM.map((c) => (
+                      <th key={c} title={ETIQUETA_OCUPACION[c]}>
+                        <span className="punto-color" style={{ background: COLOR_OCUPACION[c], borderColor: c === 'vacio' ? BORDE_VACIO : COLOR_OCUPACION[c] }} />
+                        <span className="pf-sem-texto">{ETIQUETA_OCUPACION[c]}</span>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {([['Unidades', 'semaforoUT'], ['Almacenes', 'semaforoAlmacen']] as const).map(([fila, campo]) => (
+                    <tr key={campo}>
+                      <th scope="row">{fila}</th>
+                      {COLORES_SEM.map((c) => (
+                        <td key={c}>
+                          <input type="checkbox" aria-label={`${fila}: ${ETIQUETA_OCUPACION[c]}`} checked={filtros[campo][c]}
+                            onChange={(e) => setFiltros({ ...filtros, [campo]: { ...filtros[campo], [c]: e.target.checked } })} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="pf-seccion">
+              <div className="pf-subtitulo">Rutas en el mapa</div>
+              <select value={filtros.rutas} onChange={(e) => setFiltros({ ...filtros, rutas: e.target.value as Filtros['rutas'] })} aria-label="Rutas en el mapa">
+                <option value="todas">Todas, resaltando la seleccionada</option>
+                <option value="seleccionada">Solo la de la unidad seleccionada</option>
                 <option value="ninguna">Ninguna</option>
               </select>
-            </label>
-          </div>
+            </div>
+            <button type="button" className="btn btn-sm btn-ghost pf-restablecer" onClick={() => { setFiltros(FILTROS_POR_DEFECTO); setZona('full'); }}>
+              Restablecer filtros
+            </button>
+          </PanelFlotante>
         )}
 
         {metricas && (
-          <div className="kpi-strip mapa-kpis" onPointerDown={(e) => e.stopPropagation()}>
-            <Kpi etiqueta="Cumplimiento a tiempo" valor={`${numero(k.cumplimiento, 1)} %`} sub={`${numero(k.registrados - k.incumplidos)} de ${numero(k.registrados)} pedidos no vencidos`} sem={k.registrados ? semCumplimiento : null} />
-            <Kpi etiqueta="Pedidos" valor={`${numero(k.entregados)} entregados`} sub={`${numero(k.enCurso)} en ruta · ${numero(k.pendientes)} por despachar`} />
-            <Kpi etiqueta="Costo acumulado" valor={soles(k.costo)} sub={`${numero(k.km)} km recorridos según tipo de vehículo`} />
-            <Kpi etiqueta="Flota activa" valor={`${k.flotaActiva} / ${k.flotaTotal}`} sub="vehículos operativos (sin avería ni mantenimiento)" />
-            <Kpi etiqueta="Almacén central" valor="Sin límite" sub="Abastecimiento permanente (sin capacidad máxima)" />
+          <div className="mapa-kpis" onPointerDown={(e) => e.stopPropagation()}>
+            <Kpi etiqueta="Cumplimiento a tiempo" valor={`${numero(k.cumplimiento, 1)} %`} sub={`${numero(k.registrados - k.incumplidos)} de ${numero(k.registrados)} pedidos`} sem={k.registrados ? semCumplimiento : null} />
+            <Kpi etiqueta="Pedidos entregados" valor={numero(k.entregados)} sub={`${numero(k.enCurso)} en ruta · ${numero(k.pendientes)} por despachar`} />
+            <Kpi etiqueta="Costo acumulado" valor={soles(k.costo)} sub={`${numero(k.km)} km recorridos`} />
+            <Kpi etiqueta="Flota activa" valor={`${k.flotaActiva} / ${k.flotaTotal}`} sub="Sin avería ni mantenimiento" />
+            <Kpi etiqueta="Almacén central" valor="Sin límite" sub="Abastecimiento permanente" />
             {intermedios.map((a) => {
               const o = ocupacionAlmacen(a, estado.umbralVerde, estado.umbralAmbar);
               return (
-                <Kpi key={a.id} etiqueta={`Stock ${a.nombre}`} valor={`${numero(a.stock ?? 0)} / ${numero(a.capacidad ?? 0)} (${numero(o?.pct ?? 0)} %)`}
-                  sub={`${o ? ETIQUETA_OCUPACION[o.sem] : ''} · recarga diaria 23:59:59`} sem={o && o.sem !== 'vacio' ? o.sem : null} />
+                <Kpi key={a.id} etiqueta={a.nombre} valor={`${numero(o?.pct ?? 0)} %`}
+                  sub={`${numero(a.stock ?? 0)} / ${numero(a.capacidad ?? 0)} · ${o ? ETIQUETA_OCUPACION[o.sem] : ''}`} sem={o ? o.sem : null} />
               );
             })}
-            <Kpi etiqueta="Rutas recalculadas" valor={String(k.reRuteosBloqueo + k.reRuteosAveria)}
-              sub={`bloqueo: ${k.reRuteosBloqueo} · avería: ${k.reRuteosAveria} · reasignaciones: ${k.reasignaciones}`} />
+            <Kpi etiqueta="Rutas recalculadas" valor={numero(k.reRuteosBloqueo + k.reRuteosAveria)}
+              sub={`Bloqueo ${k.reRuteosBloqueo} · avería ${k.reRuteosAveria} · reasig. ${k.reasignaciones}`} />
           </div>
         )}
 
         {leyenda && (
-          <div className="panel-flot panel-leyenda" onPointerDown={(e) => e.stopPropagation()}>
+          <PanelFlotante titulo="Leyenda" className="panel-leyenda" onCerrar={() => setLeyenda(false)}>
             <div className="legend">
               <div className="subtitulo">Pedidos · semáforo de plazo</div>
               <div className="legend-item"><IconoMini tipo="pedido" color="#2e7d46" />Paquete = pedido a tiempo</div>
@@ -319,7 +377,7 @@ export default function PantallaPanorama({ estado, minutoAhora, seleccion, onAbr
                 ? 'En «Operación día a día», clic cerca de un cruce para registrar un pedido nuevo.'
                 : 'El registro manual de pedidos solo está disponible en «Operación día a día».'}
             </p>
-          </div>
+          </PanelFlotante>
         )}
 
       </div>

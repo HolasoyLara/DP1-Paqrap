@@ -89,9 +89,8 @@ export default function PantallaPedidos({ estado, onAbrir, onAviso, onIrAParamet
     <section>
       <h2>Registro y seguimiento de pedidos</h2>
       <p className="note">
-        Registro de pedidos de la operación día a día (A1–A5, A14, A15, A25), carga masiva desde archivo (A9), seguimiento por
-        código (A8, A12, A20), búsqueda por cliente, estado o tipo de entrega (A18) y exportación a hoja de cálculo (A24). Cada pedido
-        recibe un identificador único que sirve como código de seguimiento; su hora límite se calcula automáticamente según el tipo de entrega.
+        Registro de pedidos de la operación día a día, carga masiva desde archivo, seguimiento por código, búsqueda por cliente,
+        estado o tipo de entrega y exportación a hoja de cálculo. Cada pedido recibe un identificador único que sirve como código de seguimiento; su hora límite se calcula automáticamente según el tipo de entrega.
       </p>
 
       <div className="grid-2col">
@@ -127,7 +126,7 @@ export default function PantallaPedidos({ estado, onAbrir, onAviso, onIrAParamet
             </div>
             <div className="start-bar" style={{ marginTop: 14 }}>
               <button className="btn btn-start" type="submit" disabled={!habilitado || enviando}>Registrar pedido</button>
-              <span className="hint">Pedidos de más de 24 paquetes se entregan en partes (A4, P13).</span>
+              <span className="hint">Pedidos de más de 24 paquetes se entregan en partes.</span>
             </div>
           </form>
         </div>
