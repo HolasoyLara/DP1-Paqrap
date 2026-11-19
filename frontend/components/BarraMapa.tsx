@@ -7,6 +7,7 @@ import {
   transcurridoSimulado,
 } from '@/lib/formato';
 import { ocupacionesGlobales } from './TopBar';
+import ControlRitmo, { type CambioRitmo } from './ControlRitmo';
 
 interface Props {
   estado: EstadoVisual | null;
@@ -15,6 +16,7 @@ interface Props {
   ocupado: boolean;
   onIniciar: () => void;
   onDetener: () => void;
+  onRitmo: (cambio: CambioRitmo) => void;
   infoAbierta: boolean;
   onInfo: () => void;
 }
@@ -30,7 +32,7 @@ const ESTADO_TEXTO: Record<string, string> = {
  * Barra minima sobre el mapa a pantalla completa: estado, los 4 tiempos de la rubrica (C12-C16: fecha-hora simulada,
  * transcurrido simulado, fecha-hora actual y transcurrido real) siempre visibles, y los controles de la corrida.
  */
-export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, onIniciar, onDetener, infoAbierta, onInfo }: Props) {
+export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, onIniciar, onDetener, onRitmo, infoAbierta, onInfo }: Props) {
   const [, setTic] = useState(0);
   // la hora actual solo existe en el navegador: se muestra despues de montar para no desajustar la pagina estatica
   const [montado, setMontado] = useState(false);
@@ -60,7 +62,7 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
   };
   return (
     <div className="barra-mapa" onPointerDown={(e) => e.stopPropagation()}>
-      <span className={'barra-estado' + (enCurso ? ' en-curso' : '')}>{estado ? ESTADO_TEXTO[estado.estadoCorrida] : 'Conectando…'}</span>
+      <span className={'barra-estado' + (enCurso ? ' en-curso' : '')}>{estado ? (enCurso && estado.pausada ? 'En pausa' : ESTADO_TEXTO[estado.estadoCorrida]) : 'Conectando…'}</span>
       {ocup && (
         <div className="barra-ocupaciones">
           {pildora('Flota', ocup.flota.pct, `${numero(ocup.flota.carga)} / ${numero(ocup.flota.cap)} paquetes en unidades operativas`)}
@@ -74,6 +76,7 @@ export default function BarraMapa({ estado, minutoAhora, puedeIniciar, ocupado, 
         <span><em>Transcurrido real</em><b>{hay ? transcurridoReal(segundosReales) : '—'}</b></span>
       </div>
       <button className={'btn-flot' + (infoAbierta ? ' activo' : '')} onClick={onInfo} title="Ocupación global, escenario e información de la corrida">Información</button>
+      <ControlRitmo estado={estado} ocupado={ocupado} onCambiar={onRitmo} compacto />
       <button className="btn btn-sm btn-start" disabled={!puedeIniciar || ocupado || enCurso} onClick={onIniciar}>Iniciar</button>
       <button className="btn btn-sm btn-stop" disabled={!enCurso || ocupado} onClick={onDetener}>Detener</button>
     </div>
